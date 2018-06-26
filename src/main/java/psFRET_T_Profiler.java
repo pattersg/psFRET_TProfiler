@@ -43,7 +43,7 @@ import ome.units.UNITS;
  *
  * @author pattersg
  */
-public class psFRET_T_Profiler extends javax.swing.JFrame implements PlugIn, MouseListener, MouseMotionListener, Measurements, KeyListener, ActionListener, PropertyChangeListener, WindowListener {
+public class psFRET_T_Profiler extends javax.swing.JFrame implements UserFunction, PlugIn, MouseListener, MouseMotionListener, Measurements, KeyListener, ActionListener, PropertyChangeListener, WindowListener {
 ImagePlus img;
     ImageCanvas canvas;
     ImageStatistics stats;
@@ -66,6 +66,10 @@ ImagePlus img;
     private static boolean profileGet;
     private static boolean pluginWindowOpen;
     private static int estimateS2;
+    private static boolean fitSingle;
+    private static boolean fitDouble;
+    private static boolean fitTriple;
+    private static boolean showFitSettings;
 
     RoiManager rMan;
     ResultsTable rt;
@@ -98,10 +102,17 @@ ImagePlus img;
         checkCF = new javax.swing.JCheckBox();
         checkProfilingOn = new javax.swing.JCheckBox();
         writeToResults = new javax.swing.JButton();
-        checkBkg = new javax.swing.JCheckBox();
-        bkGrdText = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
+        checkBkg = new javax.swing.JCheckBox();
+        estimateVarianceFromImage = new javax.swing.JButton();
+        bkGrdText = new javax.swing.JLabel();
         comboBoxDataList = new javax.swing.JComboBox<>();
+        checkFitSingle = new javax.swing.JCheckBox();
+        checkFitDouble = new javax.swing.JCheckBox();
+        checkFitTriple = new javax.swing.JCheckBox();
+        estimateS2TF = new javax.swing.JTextField();
+        estimateS2Text = new javax.swing.JLabel();
+        checkShowFitSettings = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("psFRET T Profiler");
@@ -181,7 +192,39 @@ ImagePlus img;
             }
         });
 
+        estimateVarianceFromImage.setText("Estimate variance from image");
+        estimateVarianceFromImage.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                estimateVarianceFromImageActionPerformed(evt);
+            }
+        });
+
         bkGrdText.setText("Choose the background data");
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(35, 35, 35)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(bkGrdText)
+                    .addComponent(checkBkg))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addContainerGap(18, Short.MAX_VALUE)
+                .addComponent(estimateVarianceFromImage)
+                .addGap(15, 15, 15))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addComponent(estimateVarianceFromImage)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 29, Short.MAX_VALUE)
+                .addComponent(checkBkg)
+                .addGap(7, 7, 7)
+                .addComponent(bkGrdText))
+        );
 
         comboBoxDataList.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         comboBoxDataList.addItemListener(new java.awt.event.ItemListener() {
@@ -190,61 +233,116 @@ ImagePlus img;
             }
         });
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(29, Short.MAX_VALUE)
-                .addComponent(comboBoxDataList, javax.swing.GroupLayout.PREFERRED_SIZE, 228, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(comboBoxDataList, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(27, Short.MAX_VALUE))
-        );
+        checkFitSingle.setText("Fit single");
+        checkFitSingle.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                checkFitSingleItemStateChanged(evt);
+            }
+        });
+        checkFitSingle.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                checkFitSingleActionPerformed(evt);
+            }
+        });
+
+        checkFitDouble.setText("Fit double");
+        checkFitDouble.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                checkFitDoubleItemStateChanged(evt);
+            }
+        });
+        checkFitDouble.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                checkFitDoubleActionPerformed(evt);
+            }
+        });
+
+        checkFitTriple.setText("Fit triple");
+        checkFitTriple.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                checkFitTripleItemStateChanged(evt);
+            }
+        });
+        checkFitTriple.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                checkFitTripleActionPerformed(evt);
+            }
+        });
+
+        estimateS2TF.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        estimateS2TF.setText("50");
+        estimateS2TF.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                estimateS2TFActionPerformed(evt);
+            }
+        });
+        estimateS2TF.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                estimateS2TFPropertyChange(evt);
+            }
+        });
+
+        estimateS2Text.setText("Variance estimate");
+
+        checkShowFitSettings.setText("Show fit Settings?");
+        checkShowFitSettings.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                checkShowFitSettingsItemStateChanged(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
             .addGroup(layout.createSequentialGroup()
+                .addGap(73, 73, 73)
+                .addComponent(getProfile))
+            .addGroup(layout.createSequentialGroup()
+                .addGap(31, 31, 31)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(comboBoxDataList, javax.swing.GroupLayout.PREFERRED_SIZE, 228, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(checkProfilingOn)))
+            .addGroup(layout.createSequentialGroup()
+                .addGap(51, 51, 51)
+                .addComponent(writeToResults))
+            .addGroup(layout.createSequentialGroup()
+                .addGap(35, 35, 35)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(35, 35, 35)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(checkCF)
-                            .addComponent(checkBkg)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(numCycleText)
-                                    .addComponent(imagesPerCycleText))
-                                .addGap(18, 18, 18)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(imagesPerCycleTF, javax.swing.GroupLayout.DEFAULT_SIZE, 69, Short.MAX_VALUE)
-                                    .addComponent(numCyclesTF)))))
+                        .addComponent(estimateS2Text)
+                        .addGap(18, 18, 18)
+                        .addComponent(estimateS2TF, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(44, 44, 44)
-                        .addComponent(bkGrdText))
-                    .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(52, 52, 52)
-                        .addComponent(writeToResults))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(73, 73, 73)
-                        .addComponent(getProfile))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(35, 35, 35)
-                        .addComponent(checkProfilingOn)))
-                .addContainerGap(18, Short.MAX_VALUE))
+                        .addGap(48, 48, 48)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(checkFitSingle, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(checkFitDouble, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(checkFitTriple, javax.swing.GroupLayout.Alignment.LEADING)))
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addGroup(layout.createSequentialGroup()
+                            .addGap(0, 0, Short.MAX_VALUE)
+                            .addComponent(checkShowFitSettings)
+                            .addGap(88, 88, 88))
+                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(checkCF, javax.swing.GroupLayout.Alignment.LEADING)
+                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                    .addGap(9, 9, 9)
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(numCycleText)
+                                        .addComponent(imagesPerCycleText))
+                                    .addGap(18, 18, 18)
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                        .addComponent(imagesPerCycleTF)
+                                        .addComponent(numCyclesTF, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(30, 30, 30)
+                .addGap(22, 22, 22)
                 .addComponent(getProfile)
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -254,19 +352,29 @@ ImagePlus img;
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(imagesPerCycleText)
                     .addComponent(imagesPerCycleTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(40, 40, 40)
-                .addComponent(checkCF)
-                .addGap(36, 36, 36)
-                .addComponent(checkBkg)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(bkGrdText)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
+                .addComponent(checkCF)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(checkFitSingle)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(checkFitDouble)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(checkFitTriple)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(checkShowFitSettings)
+                .addGap(24, 24, 24)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(estimateS2Text)
+                    .addComponent(estimateS2TF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(comboBoxDataList, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 29, Short.MAX_VALUE)
                 .addComponent(checkProfilingOn)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 37, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(writeToResults)
-                .addGap(26, 26, 26))
+                .addGap(32, 32, 32))
         );
 
         pack();
@@ -275,6 +383,7 @@ ImagePlus img;
     private void getProfileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_getProfileActionPerformed
         numCycles = Integer.parseInt(numCyclesTF.getText());
         imagesPerCycle = Integer.parseInt(imagesPerCycleTF.getText());
+        estimateS2 = Integer.parseInt(estimateS2TF.getText());
         img = WindowManager.getCurrentImage();
         profileGet = true;
         ImageProcessor ip2 = img.getProcessor();
@@ -316,8 +425,12 @@ ImagePlus img;
     private void checkCFItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_checkCFItemStateChanged
         if (evt.getStateChange() == ItemEvent.SELECTED) {
             fitCurves = true;
+            checkFitSingle.setSelected(true);
         } else {
             fitCurves = false;
+            checkFitSingle.setSelected(false);
+            checkFitDouble.setSelected(false);
+            checkFitTriple.setSelected(false);
         }
     }//GEN-LAST:event_checkCFItemStateChanged
 
@@ -359,6 +472,78 @@ ImagePlus img;
         }
     }//GEN-LAST:event_checkProfilingOnItemStateChanged
 
+    private void estimateS2TFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_estimateS2TFActionPerformed
+        try {
+            estimateS2 = Integer.parseInt(estimateS2TF.getText());
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+        }
+    }//GEN-LAST:event_estimateS2TFActionPerformed
+
+    private void estimateS2TFPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_estimateS2TFPropertyChange
+        try {
+            estimateS2 = Integer.parseInt(estimateS2TF.getText());
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+        }
+    }//GEN-LAST:event_estimateS2TFPropertyChange
+
+    private void estimateVarianceFromImageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_estimateVarianceFromImageActionPerformed
+            int varEstimate = (int) estimateVarianceFromImage();
+            estimateS2TF.setText(Integer.toString(varEstimate));
+    }//GEN-LAST:event_estimateVarianceFromImageActionPerformed
+
+    private void checkFitDoubleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkFitDoubleActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_checkFitDoubleActionPerformed
+
+    private void checkFitTripleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkFitTripleActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_checkFitTripleActionPerformed
+
+    private void checkFitSingleItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_checkFitSingleItemStateChanged
+        if (evt.getStateChange() == ItemEvent.SELECTED) {
+            fitSingle = true;
+            fitDouble = false;
+            checkFitDouble.setSelected(false);
+            fitTriple = false;
+            checkFitTriple.setSelected(false);
+        } 
+    }//GEN-LAST:event_checkFitSingleItemStateChanged
+
+    private void checkFitSingleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkFitSingleActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_checkFitSingleActionPerformed
+
+    private void checkFitDoubleItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_checkFitDoubleItemStateChanged
+        if (evt.getStateChange() == ItemEvent.SELECTED) {
+            fitSingle = false;
+            checkFitSingle.setSelected(false);
+            fitDouble = true;
+            fitTriple = false;
+            checkFitTriple.setSelected(false);
+        } 
+    }//GEN-LAST:event_checkFitDoubleItemStateChanged
+
+    private void checkFitTripleItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_checkFitTripleItemStateChanged
+        if (evt.getStateChange() == ItemEvent.SELECTED) {
+            fitSingle = false;
+            checkFitSingle.setSelected(false);
+            fitDouble = false;
+            checkFitDouble.setSelected(false);
+            fitTriple = true;
+        } 
+    }//GEN-LAST:event_checkFitTripleItemStateChanged
+
+    private void checkShowFitSettingsItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_checkShowFitSettingsItemStateChanged
+        if (evt.getStateChange() == ItemEvent.SELECTED) {
+            showFitSettings = true;
+        }else{
+            showFitSettings = false;
+        } 
+
+    }//GEN-LAST:event_checkShowFitSettingsItemStateChanged
+
     /**
      * @param args the command line arguments
      */
@@ -398,8 +583,15 @@ ImagePlus img;
     private javax.swing.JLabel bkGrdText;
     private javax.swing.JCheckBox checkBkg;
     private javax.swing.JCheckBox checkCF;
+    private javax.swing.JCheckBox checkFitDouble;
+    private javax.swing.JCheckBox checkFitSingle;
+    private javax.swing.JCheckBox checkFitTriple;
     private javax.swing.JCheckBox checkProfilingOn;
+    private javax.swing.JCheckBox checkShowFitSettings;
     private javax.swing.JComboBox<String> comboBoxDataList;
+    private javax.swing.JTextField estimateS2TF;
+    private javax.swing.JLabel estimateS2Text;
+    private javax.swing.JButton estimateVarianceFromImage;
     private javax.swing.JButton getProfile;
     private javax.swing.JTextField imagesPerCycleTF;
     private javax.swing.JLabel imagesPerCycleText;
@@ -641,7 +833,11 @@ ImagePlus img;
             plot.setLimits(xmin, xmax, ymin, ymax);
         }
         if (!fitCurves) {
-            plot.add("circles", x, y);
+            double[] x4Plot = new double [numCycles*imagesPerCycle];
+            double[] y4Plot = new double [numCycles*imagesPerCycle];
+            System.arraycopy(x, 0, x4Plot, 0, x4Plot.length);
+            System.arraycopy(y, 0, y4Plot, 0, y4Plot.length);
+            plot.add("circles", x4Plot, y4Plot);            
         }
         if (fitCurves) {
             if (bkGrdSubtract) {
@@ -656,8 +852,12 @@ ImagePlus img;
                 }
                 y = y2;
             }
-            plot.add("circles", x, y);
-            double[] yResiduals = new double[y.length];
+            double[] x4Plot = new double [numCycles*imagesPerCycle];
+            double[] y4Plot = new double [numCycles*imagesPerCycle];
+            System.arraycopy(x, 0, x4Plot, 0, x4Plot.length);
+            System.arraycopy(y, 0, y4Plot, 0, y4Plot.length);
+            plot.add("circles", x4Plot, y4Plot);
+            double[] yResiduals = new double[y4Plot.length];
             for (int cycle = 0; cycle < numCycles; cycle++) {
                 double[] x4Fit = Arrays.copyOfRange(x, cycle * imagesPerCycle, ((cycle + 1) * imagesPerCycle));
                 double[] x4FitZerod = new double[x4Fit.length];
@@ -672,19 +872,59 @@ ImagePlus img;
                     yResiduals[(cycle * imagesPerCycle) + j] = fitAndPara[2][0][j];
                 }
                 plot.add("line", x4Fit, yFitted);
-                String labelToAddA = "A=" + String.valueOf((double) Math.round(fitAndPara[1][0][0] * 1000) / 1000);
-                String labelToAddK = "k=" + String.valueOf((double) Math.round(fitAndPara[1][1][0] * 1000) / 1000);
-                String labelToAddC = "offset=" + String.valueOf((double) Math.round(fitAndPara[1][2][0] * 1000) / 1000);
-                String labelToAddChi2 = "Chi2=" + String.valueOf((double) Math.round(fitAndPara[1][4][0] * 1000) / 1000);
-                plot.addLabel(cycle * 0.35 + 0.05, 0.1, labelToAddA);
-                plot.addLabel(cycle * 0.35 + 0.05, 0.15, labelToAddK);
-                plot.addLabel(cycle * 0.35 + 0.05, 0.2, labelToAddC);
-                plot.addLabel(cycle * 0.35 + 0.05, 0.25, labelToAddChi2);
+                if (fitTriple) {
+                    double wmk = ((fitAndPara[1][0][0]*fitAndPara[1][1][0])+(fitAndPara[1][2][0]*fitAndPara[1][3][0])+(fitAndPara[1][4][0]*fitAndPara[1][5][0]))/(fitAndPara[1][0][0]+fitAndPara[1][2][0]+fitAndPara[1][4][0]);
+                    String labelToAddA1 = "A1=" + String.valueOf((double) Math.round(fitAndPara[1][0][0] * 1000) / 1000);
+                    String labelToAddK1 = "k1=" + String.valueOf((double) Math.round(fitAndPara[1][1][0] * 1000) / 1000);
+                    String labelToAddA2 = "A2=" + String.valueOf((double) Math.round(fitAndPara[1][2][0] * 1000) / 1000);
+                    String labelToAddK2 = "k2=" + String.valueOf((double) Math.round(fitAndPara[1][3][0] * 1000) / 1000);
+                    String labelToAddA3 = "A3=" + String.valueOf((double) Math.round(fitAndPara[1][4][0] * 1000) / 1000);
+                    String labelToAddK3 = "k3=" + String.valueOf((double) Math.round(fitAndPara[1][5][0] * 1000) / 1000);
+                    String labelToAddOffset = "offset=" + String.valueOf((double) Math.round(fitAndPara[1][6][0] * 1000) / 1000);
+                    String labelToAddChi2 = "Chi2=" + String.valueOf((double) Math.round(fitAndPara[1][7][0] * 1000) / 1000);
+                    String labelToAddWMK = "WMK=" + String.valueOf((double) Math.round(wmk * 1000) / 1000);
+                    plot.addLabel(cycle * 0.35 + 0.05, 0.1, labelToAddA1);
+                    plot.addLabel(cycle * 0.35 + 0.05, 0.15, labelToAddK1);
+                    plot.addLabel(cycle * 0.35 + 0.05, 0.2, labelToAddA2);
+                    plot.addLabel(cycle * 0.35 + 0.05, 0.25, labelToAddK2);
+                    plot.addLabel(cycle * 0.35 + 0.05, 0.3, labelToAddA3);
+                    plot.addLabel(cycle * 0.35 + 0.05, 0.35, labelToAddK3);
+                    plot.addLabel(cycle * 0.35 + 0.05, 0.4, labelToAddOffset);
+                    plot.addLabel(cycle * 0.35 + 0.05, 0.45, labelToAddChi2);
+                    plot.addLabel(cycle * 0.35 + 0.05, 0.5, labelToAddWMK);
+
+                } else if (fitDouble) {
+                    double wmk = ((fitAndPara[1][0][0]*fitAndPara[1][1][0])+(fitAndPara[1][2][0]*fitAndPara[1][3][0]))/(fitAndPara[1][0][0]+fitAndPara[1][2][0]);
+                    String labelToAddA1 = "A1=" + String.valueOf((double) Math.round(fitAndPara[1][0][0] * 1000) / 1000);
+                    String labelToAddK1 = "k1=" + String.valueOf((double) Math.round(fitAndPara[1][1][0] * 1000) / 1000);
+                    String labelToAddA2 = "A2=" + String.valueOf((double) Math.round(fitAndPara[1][2][0] * 1000) / 1000);
+                    String labelToAddK2 = "k2=" + String.valueOf((double) Math.round(fitAndPara[1][3][0] * 1000) / 1000);
+                    String labelToAddOffset = "offset=" + String.valueOf((double) Math.round(fitAndPara[1][6][0] * 1000) / 1000);
+                    String labelToAddChi2 = "Chi2=" + String.valueOf((double) Math.round(fitAndPara[1][7][0] * 1000) / 1000);
+                    String labelToAddWMK = "WMK=" + String.valueOf((double) Math.round(wmk * 1000) / 1000);
+                    plot.addLabel(cycle * 0.35 + 0.05, 0.1, labelToAddA1);
+                    plot.addLabel(cycle * 0.35 + 0.05, 0.15, labelToAddK1);
+                    plot.addLabel(cycle * 0.35 + 0.05, 0.2, labelToAddA2);
+                    plot.addLabel(cycle * 0.35 + 0.05, 0.25, labelToAddK2);
+                    plot.addLabel(cycle * 0.35 + 0.05, 0.3, labelToAddOffset);
+                    plot.addLabel(cycle * 0.35 + 0.05, 0.35, labelToAddChi2);
+                    plot.addLabel(cycle * 0.35 + 0.05, 0.4, labelToAddWMK);
+
+                } else {
+                    String labelToAddA1 = "A=" + String.valueOf((double) Math.round(fitAndPara[1][0][0] * 1000) / 1000);
+                    String labelToAddK1 = "k=" + String.valueOf((double) Math.round(fitAndPara[1][1][0] * 1000) / 1000);
+                    String labelToAddOffset = "offset=" + String.valueOf((double) Math.round(fitAndPara[1][6][0] * 1000) / 1000);
+                    String labelToAddChi2 = "Chi2=" + String.valueOf((double) Math.round(fitAndPara[1][7][0] * 1000) / 1000);
+                    plot.addLabel(cycle * 0.35 + 0.05, 0.1, labelToAddA1);
+                    plot.addLabel(cycle * 0.35 + 0.05, 0.15, labelToAddK1);
+                    plot.addLabel(cycle * 0.35 + 0.05, 0.2, labelToAddOffset);
+                    plot.addLabel(cycle * 0.35 + 0.05, 0.25, labelToAddChi2);
+                }
             }
-            //residuals plot
+           //residuals plot
             Plot plotResiduals = new Plot("residuals", xLabel, yLabel);
-            plotResiduals.add("circles", x, yResiduals);
-            if (pwin2 == null) {
+            plotResiduals.add("circles", x4Plot, yResiduals);
+             if (pwin2 == null) {
                 pwin2 = plotResiduals.show();
             } else {
                 pwin2.drawPlot(plotResiduals);
@@ -724,13 +964,23 @@ ImagePlus img;
             plot.setLimits(xmin, xmax, ymin, ymax);
         }
         if (!fitCurves) {
-            plot.add("circles", x, y);
+            double[] x4Plot = new double [numCycles*imagesPerCycle];
+            double[] y4Plot = new double [numCycles*imagesPerCycle];
+            System.arraycopy(x, 0, x4Plot, 0, x4Plot.length);
+            System.arraycopy(y, 0, y4Plot, 0, y4Plot.length);
+            plot.add("circles", x4Plot, y4Plot);
         }
         String roiColumnName = "Rois";
-        String aColumnName = "a_from_fit";
-        String bColumnName = "k_from_fit";
-        String cColumnName = "offset_from_fit";
+        String a1ColumnName = "a1_from_fit";
+        String k1ColumnName = "k1_from_fit";
+        String a2ColumnName = "a2_from_fit";
+        String k2ColumnName = "k2_from_fit";
+        String a3ColumnName = "a3_from_fit";
+        String k3ColumnName = "k3_from_fit";
+        String oColumnName = "offset_from_fit";
         String Chi2ColumnName = "Chi2_from_fit";
+        String WMKColumnName = "WMK_from_fit";//weighted mean rate constant
+
         if (fitCurves) {
             if (bkGrdSubtract) {
                 if ("None".equals(bkGrdImage) || bkGrdImage == null) {
@@ -744,8 +994,12 @@ ImagePlus img;
                 }
                 y = y2;
             }
-            plot.add("circles", x, y);
-            double[] yResiduals = new double[y.length];
+            double[] x4Plot = new double [numCycles*imagesPerCycle];
+            double[] y4Plot = new double [numCycles*imagesPerCycle];
+            System.arraycopy(x, 0, x4Plot, 0, x4Plot.length);
+            System.arraycopy(y, 0, y4Plot, 0, y4Plot.length);
+            plot.add("circles", x4Plot, y4Plot);
+            double[] yResiduals = new double[y4Plot.length];
             for (int cycle = 0; cycle < numCycles; cycle++) {
                 double[] x4Fit = Arrays.copyOfRange(x, cycle * imagesPerCycle, ((cycle + 1) * imagesPerCycle));
                 double[] x4FitZerod = new double[x4Fit.length];
@@ -760,21 +1014,61 @@ ImagePlus img;
                     yResiduals[(cycle * imagesPerCycle) + j] = fitAndPara[2][0][j];
                 }
                 plot.add("line", x4Fit, yFitted);
-                String labelToAddA = "A=" + String.valueOf((double) Math.round(fitAndPara[1][0][0] * 1000) / 1000);
-                String labelToAddK = "k=" + String.valueOf((double) Math.round(fitAndPara[1][1][0] * 1000) / 1000);
-                String labelToAddC = "offset=" + String.valueOf((double) Math.round(fitAndPara[1][2][0] * 1000) / 1000);
-                String labelToAddChi2 = "Chi2=" + String.valueOf((double) Math.round(fitAndPara[1][4][0] * 1000) / 1000);
-                plot.addLabel(cycle * 0.35 + 0.05, 0.1, labelToAddA);
-                plot.addLabel(cycle * 0.35 + 0.05, 0.15, labelToAddK);
-                plot.addLabel(cycle * 0.35 + 0.05, 0.2, labelToAddC);
-                plot.addLabel(cycle * 0.35 + 0.05, 0.25, labelToAddChi2);
+                double wmk = Double.NaN;
+                if (fitTriple) {
+                    wmk = ((fitAndPara[1][0][0]*fitAndPara[1][1][0])+(fitAndPara[1][2][0]*fitAndPara[1][3][0])+(fitAndPara[1][4][0]*fitAndPara[1][5][0]))/(fitAndPara[1][0][0]+fitAndPara[1][2][0]+fitAndPara[1][4][0]);
+                    String labelToAddA1 = "A1=" + String.valueOf((double) Math.round(fitAndPara[1][0][0] * 1000) / 1000);
+                    String labelToAddK1 = "k1=" + String.valueOf((double) Math.round(fitAndPara[1][1][0] * 1000) / 1000);
+                    String labelToAddA2 = "A2=" + String.valueOf((double) Math.round(fitAndPara[1][2][0] * 1000) / 1000);
+                    String labelToAddK2 = "k2=" + String.valueOf((double) Math.round(fitAndPara[1][3][0] * 1000) / 1000);
+                    String labelToAddA3 = "A3=" + String.valueOf((double) Math.round(fitAndPara[1][4][0] * 1000) / 1000);
+                    String labelToAddK3 = "k3=" + String.valueOf((double) Math.round(fitAndPara[1][5][0] * 1000) / 1000);
+                    String labelToAddOffset = "offset=" + String.valueOf((double) Math.round(fitAndPara[1][6][0] * 1000) / 1000);
+                    String labelToAddChi2 = "Chi2=" + String.valueOf((double) Math.round(fitAndPara[1][7][0] * 1000) / 1000);
+                    String labelToAddWMK = "WMK=" + String.valueOf((double) Math.round(wmk * 1000) / 1000);
+                    plot.addLabel(cycle * 0.35 + 0.05, 0.1, labelToAddA1);
+                    plot.addLabel(cycle * 0.35 + 0.05, 0.15, labelToAddK1);
+                    plot.addLabel(cycle * 0.35 + 0.05, 0.2, labelToAddA2);
+                    plot.addLabel(cycle * 0.35 + 0.05, 0.25, labelToAddK2);
+                    plot.addLabel(cycle * 0.35 + 0.05, 0.3, labelToAddA3);
+                    plot.addLabel(cycle * 0.35 + 0.05, 0.35, labelToAddK3);
+                    plot.addLabel(cycle * 0.35 + 0.05, 0.4, labelToAddOffset);
+                    plot.addLabel(cycle * 0.35 + 0.05, 0.45, labelToAddChi2);
+                    plot.addLabel(cycle * 0.35 + 0.05, 0.5, labelToAddWMK);
 
+                } else if (fitDouble) {
+                    wmk = ((fitAndPara[1][0][0]*fitAndPara[1][1][0])+(fitAndPara[1][2][0]*fitAndPara[1][3][0]))/(fitAndPara[1][0][0]+fitAndPara[1][2][0]);
+                    String labelToAddA1 = "A1=" + String.valueOf((double) Math.round(fitAndPara[1][0][0] * 1000) / 1000);
+                    String labelToAddK1 = "k1=" + String.valueOf((double) Math.round(fitAndPara[1][1][0] * 1000) / 1000);
+                    String labelToAddA2 = "A2=" + String.valueOf((double) Math.round(fitAndPara[1][2][0] * 1000) / 1000);
+                    String labelToAddK2 = "k2=" + String.valueOf((double) Math.round(fitAndPara[1][3][0] * 1000) / 1000);
+                    String labelToAddOffset = "offset=" + String.valueOf((double) Math.round(fitAndPara[1][6][0] * 1000) / 1000);
+                    String labelToAddChi2 = "Chi2=" + String.valueOf((double) Math.round(fitAndPara[1][7][0] * 1000) / 1000);
+                    String labelToAddWMK = "WMK=" + String.valueOf((double) Math.round(wmk * 1000) / 1000);
+                    plot.addLabel(cycle * 0.35 + 0.05, 0.1, labelToAddA1);
+                    plot.addLabel(cycle * 0.35 + 0.05, 0.15, labelToAddK1);
+                    plot.addLabel(cycle * 0.35 + 0.05, 0.2, labelToAddA2);
+                    plot.addLabel(cycle * 0.35 + 0.05, 0.25, labelToAddK2);
+                    plot.addLabel(cycle * 0.35 + 0.05, 0.3, labelToAddOffset);
+                    plot.addLabel(cycle * 0.35 + 0.05, 0.35, labelToAddChi2);
+                    plot.addLabel(cycle * 0.35 + 0.05, 0.4, labelToAddWMK);
+
+                } else {
+                    String labelToAddA1 = "A=" + String.valueOf((double) Math.round(fitAndPara[1][0][0] * 1000) / 1000);
+                    String labelToAddK1 = "k=" + String.valueOf((double) Math.round(fitAndPara[1][1][0] * 1000) / 1000);
+                    String labelToAddOffset = "offset=" + String.valueOf((double) Math.round(fitAndPara[1][6][0] * 1000) / 1000);
+                    String labelToAddChi2 = "Chi2=" + String.valueOf((double) Math.round(fitAndPara[1][7][0] * 1000) / 1000);
+                    plot.addLabel(cycle * 0.35 + 0.05, 0.1, labelToAddA1);
+                    plot.addLabel(cycle * 0.35 + 0.05, 0.15, labelToAddK1);
+                    plot.addLabel(cycle * 0.35 + 0.05, 0.2, labelToAddOffset);
+                    plot.addLabel(cycle * 0.35 + 0.05, 0.25, labelToAddChi2);
+                }
                 String roiName = name + "_Ch" + ch + "_cycle" + cycle + "_" + nameROI;
-                updateFitResults(cycle, roiColumnName, aColumnName, bColumnName, cColumnName, Chi2ColumnName, roiName, fitAndPara[1][0][0], fitAndPara[1][1][0], fitAndPara[1][2][0], fitAndPara[1][3][0], fitAndPara[1][4][0]);
+                updateFitResults(cycle, roiColumnName, a1ColumnName, k1ColumnName, a2ColumnName, k2ColumnName, a3ColumnName, k3ColumnName, oColumnName, Chi2ColumnName, WMKColumnName, roiName, fitAndPara[1][0][0], fitAndPara[1][1][0], fitAndPara[1][2][0], fitAndPara[1][3][0], fitAndPara[1][4][0], fitAndPara[1][5][0], fitAndPara[1][6][0], fitAndPara[1][7][0], wmk);
             }
             //residuals plot
             Plot plotResiduals = new Plot("residuals", xLabel, yLabel);
-            plotResiduals.add("circles", x, yResiduals);
+            plotResiduals.add("circles", x4Plot, yResiduals);
             if (pwin2 == null) {
                 pwin2 = plotResiduals.show();
             } else {
@@ -870,39 +1164,59 @@ ImagePlus img;
         rt.updateResults();
     }
 
-    private void updateFitResults(int row, String ROIColumnHeading, String aColumnHeading, String bColumnHeading, String cColumnHeading, String Chi2ColumnHeading, String ROI, double valuesA, double valuesK, double valuesC, double valuesR2, double valuesChi2) {
+    private void updateFitResults(int row, String ROIColumnHeading, String a1ColumnHeading, String k1ColumnHeading, String a2ColumnHeading, String k2ColumnHeading, String a3ColumnHeading, String k3ColumnHeading, String oColumnHeading, String Chi2ColumnHeading,  String WMKColumnHeading, String ROI, double valuesA1, double valuesK1, double valuesA2, double valuesK2, double valuesA3, double valuesK3, double valuesOffset, double valuesChi2, double valuesWMK) {
         rt = Analyzer.getResultsTable();
         rt.setNaNEmptyCells(true);
         if (!rt.columnExists(ROIColumnHeading)) {
             rt.setValue(ROIColumnHeading, row, ROI);
-            rt.setValue(aColumnHeading, row, valuesA);
-            rt.setValue(bColumnHeading, row, valuesK);
-            rt.setValue(cColumnHeading, row, valuesC);
+            rt.setValue(a1ColumnHeading, row, valuesA1);
+            rt.setValue(k1ColumnHeading, row, valuesK1);
+            rt.setValue(a2ColumnHeading, row, valuesA2);
+            rt.setValue(k2ColumnHeading, row, valuesK2);
+            rt.setValue(a3ColumnHeading, row, valuesA3);
+            rt.setValue(k3ColumnHeading, row, valuesK3);
+            rt.setValue(oColumnHeading, row, valuesOffset);
             rt.setValue(Chi2ColumnHeading, row, valuesChi2);
+            rt.setValue(WMKColumnHeading, row, valuesWMK);
         } else if (rt.columnExists(ROIColumnHeading) && rt.size() - 1 <= row) {
             rt.setValue(ROIColumnHeading, row, ROI);
-            rt.setValue(aColumnHeading, row, valuesA);
-            rt.setValue(bColumnHeading, row, valuesK);
-            rt.setValue(cColumnHeading, row, valuesC);
+            rt.setValue(a1ColumnHeading, row, valuesA1);
+            rt.setValue(k1ColumnHeading, row, valuesK1);
+            rt.setValue(a2ColumnHeading, row, valuesA2);
+            rt.setValue(k2ColumnHeading, row, valuesK2);
+            rt.setValue(a3ColumnHeading, row, valuesA3);
+            rt.setValue(k3ColumnHeading, row, valuesK3);
+            rt.setValue(oColumnHeading, row, valuesOffset);
             rt.setValue(Chi2ColumnHeading, row, valuesChi2);
+            rt.setValue(WMKColumnHeading, row, valuesWMK);
         } else if (rt.columnExists(ROIColumnHeading) && rt.size() - 1 > row) {
             boolean matchOrIndexFound = false;
             for (int i = 0; i < rt.size(); i++) {
                 if (rt.getStringValue(ROIColumnHeading, i).equals(ROI)) {
                     matchOrIndexFound = true;
-                    rt.setValue(ROIColumnHeading, i, ROI);
-                    rt.setValue(aColumnHeading, i, valuesA);
-                    rt.setValue(bColumnHeading, i, valuesK);
-                    rt.setValue(cColumnHeading, i, valuesC);
+                    rt.setValue(ROIColumnHeading, row, ROI);
+                    rt.setValue(a1ColumnHeading, row, valuesA1);
+                    rt.setValue(k1ColumnHeading, row, valuesK1);
+                    rt.setValue(a2ColumnHeading, row, valuesA2);
+                    rt.setValue(k2ColumnHeading, row, valuesK2);
+                    rt.setValue(a3ColumnHeading, row, valuesA3);
+                    rt.setValue(k3ColumnHeading, row, valuesK3);
+                    rt.setValue(oColumnHeading, row, valuesOffset);
                     rt.setValue(Chi2ColumnHeading, row, valuesChi2);
+                    rt.setValue(WMKColumnHeading, row, valuesWMK);
                 }
                 if (!matchOrIndexFound && rt.getStringValue(ROIColumnHeading, i).equals("NaN") && !rt.getStringValue(ROIColumnHeading, i - 1).equals("NaN")) {
                     matchOrIndexFound = true;
-                    rt.setValue(ROIColumnHeading, i, ROI);
-                    rt.setValue(aColumnHeading, i, valuesA);
-                    rt.setValue(bColumnHeading, i, valuesK);
-                    rt.setValue(cColumnHeading, i, valuesC);
+                    rt.setValue(ROIColumnHeading, row, ROI);
+                    rt.setValue(a1ColumnHeading, row, valuesA1);
+                    rt.setValue(k1ColumnHeading, row, valuesK1);
+                    rt.setValue(a2ColumnHeading, row, valuesA2);
+                    rt.setValue(k2ColumnHeading, row, valuesK2);
+                    rt.setValue(a3ColumnHeading, row, valuesA3);
+                    rt.setValue(k3ColumnHeading, row, valuesK3);
+                    rt.setValue(oColumnHeading, row, valuesOffset);
                     rt.setValue(Chi2ColumnHeading, row, valuesChi2);
+                    rt.setValue(WMKColumnHeading, row, valuesWMK);
                 }
             }
         }
@@ -914,46 +1228,156 @@ ImagePlus img;
         CurveFitter cf = new CurveFitter(xCF, yCF);
         double firstframeint = yCF[0];
         double lastframeint = yCF.length - 1;
-        double guess_a = firstframeint - lastframeint;
-        double guess_b = 1 / (guess_a * 0.37);
-        double guess_c = lastframeint;
+        double[][][] theFitAndParameters = new double[xCF.length][xCF.length][xCF.length];
+        
+        double tau = findTauEstimate(xCF, yCF, firstframeint, lastframeint);
+        
+        if(fitTriple){
+        String fitFunction = "y = a*exp(-bx) + c*exp(-dx) + e*exp(-fx) + g";
+        double guess_a1 = firstframeint - lastframeint;
+        double guess_k1 = 1 / tau;
+        double guess_a2 = (firstframeint - lastframeint)/5;
+        double guess_k2 = (1 / tau)/10;
+        double guess_a3 = (firstframeint - lastframeint)/10;
+        double guess_k3 = (1 / tau)/20;
+        double guess_o = lastframeint;
         double maxiteration = 2000;
         double NumRestarts = 2;
         double errotTol = 10;
         double[] fitparam = {
-            guess_a,
-            guess_b,
-            guess_c,
+            guess_a1,
+            guess_k1,
+            guess_a2,
+            guess_k2,
+            guess_a3,
+            guess_k3,
+            guess_o,
+            maxiteration,
+            NumRestarts,
+            errotTol
+        };
+        double[] initialParaVara = divideArrayByValue(fitparam,10);
+        cf.doCustomFit(this, 7, fitFunction,  fitparam, initialParaVara, showFitSettings); //triple exponential decay with offset 
+        double[] fittedParam = cf.getParams();
+        double[] residuals = cf.getResiduals();
+        double Chi2 = calculateReducedChi2(residuals, yCF);
+        double[] theFit = getTheFit(fittedParam, cf.getXPoints());
+        for (int i = 0; i < theFit.length; i++) {
+            theFitAndParameters[0][i][0] = theFit[i];
+            theFitAndParameters[2][0][i] = residuals[i];
+        }
+        theFitAndParameters[1][0][0] = fittedParam[0];//a1
+        theFitAndParameters[1][1][0] = fittedParam[1];//k1 rate constant	
+        theFitAndParameters[1][2][0] = fittedParam[2];//a2 
+        theFitAndParameters[1][3][0] = fittedParam[3];//k2 rate constant
+        theFitAndParameters[1][4][0] = fittedParam[4];//a3 	
+        theFitAndParameters[1][5][0] = fittedParam[5];//k3 rate constant
+        theFitAndParameters[1][6][0] = fittedParam[6];//offset
+        theFitAndParameters[1][7][0] = Chi2;//reduced Chi-square    
+        
+        }else if (fitDouble){
+        String fitFunction = "y = a*exp(-bx) + c*exp(-dx) + e";
+        double guess_a1 = (firstframeint - lastframeint)/2;
+        double guess_k1 = 1 / tau;
+        double guess_a2 = (firstframeint - lastframeint)/2;
+        double guess_k2 = (1 / tau)/10;
+        double guess_o = lastframeint;
+        double maxiteration = 2000;
+        double NumRestarts = 2;
+        double errotTol = 10;
+        double[] fitparam = {
+            guess_a1,
+            guess_k1,
+            guess_a2,
+            guess_k2,
+            guess_o,
+            maxiteration,
+            NumRestarts,
+            errotTol
+        };
+        double[] initialParaVara = divideArrayByValue(fitparam,10);
+        cf.doCustomFit(this, 5, fitFunction,  fitparam, initialParaVara, showFitSettings); //double exponential decay with offset 
+        double[] fittedParam = cf.getParams();
+        double[] residuals = cf.getResiduals();
+        double Chi2 = calculateReducedChi2(residuals, yCF);
+        double[] theFit = getTheFit(fittedParam, cf.getXPoints());
+        for (int i = 0; i < theFit.length; i++) {
+            theFitAndParameters[0][i][0] = theFit[i];
+            theFitAndParameters[2][0][i] = residuals[i];
+        }
+        theFitAndParameters[1][0][0] = fittedParam[0];//a1
+        theFitAndParameters[1][1][0] = fittedParam[1];//k1 rate constant	
+        theFitAndParameters[1][2][0] = fittedParam[2];//a2 
+        theFitAndParameters[1][3][0] = fittedParam[3];//k2 rate constant
+        theFitAndParameters[1][6][0] = fittedParam[4];//offset
+        theFitAndParameters[1][7][0] = Chi2;//reduced Chi-square        
+        
+        }else{
+            
+        double guess_a1 = firstframeint - lastframeint;
+        double guess_k1 = 1 / tau;
+        double guess_o = lastframeint;
+        double maxiteration = 2000;
+        double NumRestarts = 2;
+        double errotTol = 10;
+        double[] fitparam = {
+            guess_a1,
+            guess_k1,
+            guess_o,
             maxiteration,
             NumRestarts,
             errotTol
         };
 
         cf.setInitialParameters(fitparam);
-        cf.doFit(11); //exponential decay with offset 
+        cf.doFit(11); //single exponential decay with offset 
         double[] fittedParam = cf.getParams();
-        double R2 = cf.getRSquared();
         double[] residuals = cf.getResiduals();
         double Chi2 = calculateReducedChi2(residuals, yCF);
         double[] theFit = getTheFit(fittedParam, cf.getXPoints());
-        double[][][] theFitAndParameters = new double[theFit.length][theFit.length][theFit.length];
         for (int i = 0; i < theFit.length; i++) {
             theFitAndParameters[0][i][0] = theFit[i];
             theFitAndParameters[2][0][i] = residuals[i];
         }
         theFitAndParameters[1][0][0] = fittedParam[0];//a
         theFitAndParameters[1][1][0] = fittedParam[1];//b rate constant	
-        theFitAndParameters[1][2][0] = fittedParam[2];//c offset
-        theFitAndParameters[1][3][0] = R2;//r-squared
-        theFitAndParameters[1][4][0] = Chi2;//reduced Chi-square
+        theFitAndParameters[1][6][0] = fittedParam[2];//c offset
+        theFitAndParameters[1][7][0] = Chi2;//reduced Chi-square
+        }
 
         return theFitAndParameters;
+    }
+    
+    public double findTauEstimate(double[] x, double[] y, double startIntensity, double endIntensity){
+        double tauToReturn = 1;
+        double previousIntensity = startIntensity-endIntensity;
+        for(int t=0; t<y.length;t++){
+            if((y[t]-endIntensity) <= ((startIntensity-endIntensity)*0.37) && previousIntensity >= ((startIntensity-endIntensity)*0.37))
+                tauToReturn = x[t];
+           previousIntensity = y[t]-endIntensity;
+        }
+        return tauToReturn;
+    }
+  
+    @Override
+    public double userFunction(double[] par, double x) {
+        if (fitTriple) {
+            return par[0] * Math.exp(-par[1] * x) + par[2] * Math.exp(-par[3] * x) + par[4] * Math.exp(-par[5] * x) + par[6];
+        }else if (fitDouble) {
+            return par[0] * Math.exp(-par[1] * x) + par[2] * Math.exp(-par[3] * x) + par[4];
+        }
+        return par[0] * Math.exp(-par[1] * x) + par[2];
     }
 
     private double[] getTheFit(double[] fitParameters, double[] timePoints) {
         double[] theFit = new double[timePoints.length];
         for (int tp = 0; tp < timePoints.length; tp++) {
-            theFit[tp] = fitParameters[0] * Math.exp(-fitParameters[1] * timePoints[tp]) + fitParameters[2];
+            if(fitTriple)
+                theFit[tp] = fitParameters[0] * Math.exp(-fitParameters[1] * timePoints[tp]) + fitParameters[2] * Math.exp(-fitParameters[3] * timePoints[tp]) + fitParameters[4] * Math.exp(-fitParameters[5] * timePoints[tp]) + fitParameters[6];
+            else if(fitDouble)
+                theFit[tp] = fitParameters[0] * Math.exp(-fitParameters[1] * timePoints[tp]) + fitParameters[2] * Math.exp(-fitParameters[3] * timePoints[tp]) + fitParameters[4];
+            else
+                theFit[tp] = fitParameters[0] * Math.exp(-fitParameters[1] * timePoints[tp]) + fitParameters[2];
         }
         return theFit;
     }
@@ -962,41 +1386,89 @@ ImagePlus img;
         double chi2ToReturn = 0;
         int dataPoints = 0;
         double[] residualArray2 = multiplyTwoArrays(residualArray, residualArray);
-        double sum = 0;
-        for(int s=residualArray2.length-estimateS2-1;s<residualArray2.length;s++){
-            sum+=residualArray2[s];
-        }
-        double s2=sum/(estimateS2-1);
-        double[] arrayToSum = divideTwoArrays(residualArray2, dataArray);
+        double[] arrayToSum = divideArrayByValue(residualArray2, estimateS2);
         for (int tp = 0; tp < arrayToSum.length; tp++) {
             if (!Double.isInfinite(arrayToSum[tp])) {
                 chi2ToReturn = chi2ToReturn + arrayToSum[tp];
                 dataPoints++;
             }
         }
-        return chi2ToReturn / (dataPoints - 3 - 1);//divide by number of data points minus number of fitting parameters minus one
+        int df;
+        if(fitTriple)
+            df = 8;
+        if(fitDouble)
+            df = 6;
+        else
+            df = 4;
+        return chi2ToReturn / (dataPoints - df);//divide by number of data points minus df
+    }
+    
+      public double estimateVarianceFromImage() {
+        img = IJ.getImage();
+        int nSlices = img.getNSlices();
+        int size = img.getNFrames();
+        if (size == 1)//in case the stack is read as a Z stack instead of T stack
+        {
+            size = nSlices;
+        }
+        int currentchannel = img.getC() - 1;
+        int currentZ = img.getZ() - 1;
+        Calibration cal = img.getCalibration();
+        img.setC(currentchannel + 1);
+        double[] values = new double[size];
+        for (int i = 1; i <= size; i++) {
+            if (img.getNFrames() == 1) {
+                img.setZ(i);
+            } else {
+                img.setT(i);
+            }
+            ImageProcessor ip = img.getProcessor();
+            ImageStatistics stats = ImageStatistics.getStatistics(ip, MEAN, cal);
+            values[i - 1] = (double) stats.mean;
+        }
+        double meanValue = getMeanOfArray(values);
+        double [] residualArray = subtractValueFromArray(values,meanValue);
+        double [] residualArray2 = multiplyTwoArrays(residualArray, residualArray);
+        return getSumOfArray(residualArray2) / (size - 1);
+    }
+
+    public static double getMeanOfArray(double[] theArray) {
+        double sum = 0;
+        for (int i = 0; i < theArray.length; i++) {
+            sum = sum + theArray[i];
+        }
+        return sum / theArray.length;
+    }
+
+    public static double getSumOfArray(double[] theArray) {
+        double sum = 0;
+        for (int i = 0; i < theArray.length; i++) {
+            sum = sum + theArray[i];
+        }
+        return sum;
     }
 
     private double[] getTimingPerPlane(String arg, int tPoints, int currZ, int currCh) throws Exception {
-    String fExt = arg.substring(arg.indexOf("."), arg.length());
-	    if(fExt.contains(" ") && fExt.indexOf(" ")<arg.length())
-	    	fExt = fExt.substring(0, fExt.indexOf(" "));
-	    String id2 = arg.substring(0, arg.indexOf("."))+fExt;
-	    double[] timeStampsToReturn = new double[tPoints];
-	    IFormatReader reader = null;
-	    int series = 0;
-	try{
-    	ServiceFactory factory = new ServiceFactory();
-     	OMEXMLService service = factory.getInstance(OMEXMLService.class);
-    	IMetadata meta = service.createOMEXMLMetadata();
-    	// create format reader
-    	reader = new ImageReader();
-    	reader.setMetadataStore(meta);
-     	// initialize file
-    	reader.setId(id2);
-        
-    	int seriesCount = reader.getSeriesCount();
-			
+        String fExt = arg.substring(arg.indexOf("."), arg.length());
+        if (fExt.contains(" ") && fExt.indexOf(" ") < arg.length()) {
+            fExt = fExt.substring(0, fExt.indexOf(" "));
+        }
+        String id2 = arg.substring(0, arg.indexOf(".")) + fExt;
+        double[] timeStampsToReturn = new double[tPoints];
+        IFormatReader reader = null;
+        int series = 0;
+        try {
+            ServiceFactory factory = new ServiceFactory();
+            OMEXMLService service = factory.getInstance(OMEXMLService.class);
+            IMetadata meta = service.createOMEXMLMetadata();
+            // create format reader
+            reader = new ImageReader();
+            reader.setMetadataStore(meta);
+            // initialize file
+            reader.setId(id2);
+
+            int seriesCount = reader.getSeriesCount();
+
 	   if (series < seriesCount) 
 	    	reader.setSeries(series);
 	    series = reader.getSeries();
@@ -1085,6 +1557,15 @@ ImagePlus img;
         }
         return arrayToReturn;
     }
+    
+    private static double[] divideArrayByValue(double[] array1, double theValue) {
+        double[] arrayToReturn = new double[array1.length];
+        for (int i = 0; i < array1.length; i++) {
+            arrayToReturn[i] = array1[i]/theValue;
+        }
+        return arrayToReturn;
+    }
+
 
     private static double[][] copyRange2DArray(double[][] srcArray, int srcPos0, int length) {
         double[] desArray0 = Arrays.copyOfRange(srcArray[0], srcPos0, srcPos0 + length);
