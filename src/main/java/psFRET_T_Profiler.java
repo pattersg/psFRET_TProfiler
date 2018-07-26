@@ -60,12 +60,10 @@ ImagePlus img;
     private static boolean fitCurves;
     private static boolean bkGrdSubtract;
     private static boolean ProfilingOn;
-    private static boolean saveResultsToTable;
     private static String bkGrdImage;
     private static boolean dialogCanceled;
     private static boolean profileGet;
     private static boolean pluginWindowOpen;
-    private static int estimateS2;
     private static boolean fitSingle;
     private static boolean fitDouble;
     private static boolean fitTriple;
@@ -104,14 +102,11 @@ ImagePlus img;
         writeToResults = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
         checkBkg = new javax.swing.JCheckBox();
-        estimateVarianceFromImage = new javax.swing.JButton();
         bkGrdText = new javax.swing.JLabel();
         comboBoxDataList = new javax.swing.JComboBox<>();
         checkFitSingle = new javax.swing.JCheckBox();
         checkFitDouble = new javax.swing.JCheckBox();
         checkFitTriple = new javax.swing.JCheckBox();
-        estimateS2TF = new javax.swing.JTextField();
-        estimateS2Text = new javax.swing.JLabel();
         checkShowFitSettings = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -192,13 +187,6 @@ ImagePlus img;
             }
         });
 
-        estimateVarianceFromImage.setText("Estimate variance from image");
-        estimateVarianceFromImage.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                estimateVarianceFromImageActionPerformed(evt);
-            }
-        });
-
         bkGrdText.setText("Choose the background data");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
@@ -210,20 +198,16 @@ ImagePlus img;
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(bkGrdText)
                     .addComponent(checkBkg))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(18, Short.MAX_VALUE)
-                .addComponent(estimateVarianceFromImage)
-                .addGap(15, 15, 15))
+                .addContainerGap(47, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addComponent(estimateVarianceFromImage)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 29, Short.MAX_VALUE)
+                .addGap(27, 27, 27)
                 .addComponent(checkBkg)
-                .addGap(7, 7, 7)
-                .addComponent(bkGrdText))
+                .addGap(18, 18, 18)
+                .addComponent(bkGrdText)
+                .addContainerGap(20, Short.MAX_VALUE))
         );
 
         comboBoxDataList.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
@@ -269,25 +253,15 @@ ImagePlus img;
             }
         });
 
-        estimateS2TF.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
-        estimateS2TF.setText("50");
-        estimateS2TF.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                estimateS2TFActionPerformed(evt);
-            }
-        });
-        estimateS2TF.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-            public void propertyChange(java.beans.PropertyChangeEvent evt) {
-                estimateS2TFPropertyChange(evt);
-            }
-        });
-
-        estimateS2Text.setText("Variance estimate");
-
         checkShowFitSettings.setText("Show fit Settings?");
         checkShowFitSettings.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 checkShowFitSettingsItemStateChanged(evt);
+            }
+        });
+        checkShowFitSettings.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                checkShowFitSettingsActionPerformed(evt);
             }
         });
 
@@ -295,49 +269,52 @@ ImagePlus img;
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(73, 73, 73)
-                .addComponent(getProfile))
-            .addGroup(layout.createSequentialGroup()
-                .addGap(31, 31, 31)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(comboBoxDataList, javax.swing.GroupLayout.PREFERRED_SIZE, 228, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(checkProfilingOn)))
-            .addGroup(layout.createSequentialGroup()
-                .addGap(51, 51, 51)
-                .addComponent(writeToResults))
             .addGroup(layout.createSequentialGroup()
                 .addGap(35, 35, 35)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(checkShowFitSettings)
+                        .addGap(88, 88, 88))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(estimateS2Text)
-                        .addGap(18, 18, 18)
-                        .addComponent(estimateS2TF, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(checkCF, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                .addGap(9, 9, 9)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(numCycleText)
+                                    .addComponent(imagesPerCycleText))
+                                .addGap(18, 18, 18)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(imagesPerCycleTF)
+                                    .addComponent(numCyclesTF, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(48, 48, 48)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(checkFitSingle, javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(checkFitDouble, javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(checkFitTriple, javax.swing.GroupLayout.Alignment.LEADING)))
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addGroup(layout.createSequentialGroup()
-                            .addGap(0, 0, Short.MAX_VALUE)
-                            .addComponent(checkShowFitSettings)
-                            .addGap(88, 88, 88))
-                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                .addComponent(checkCF, javax.swing.GroupLayout.Alignment.LEADING)
-                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                    .addGap(9, 9, 9)
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(numCycleText)
-                                        .addComponent(imagesPerCycleText))
-                                    .addGap(18, 18, 18)
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                        .addComponent(imagesPerCycleTF)
-                                        .addComponent(numCyclesTF, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                            .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
+                            .addComponent(checkFitTriple, javax.swing.GroupLayout.Alignment.LEADING))
+                        .addGap(0, 0, Short.MAX_VALUE))))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(comboBoxDataList, javax.swing.GroupLayout.PREFERRED_SIZE, 228, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(19, 19, 19))
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(73, 73, 73)
+                        .addComponent(getProfile))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(31, 31, 31)
+                        .addComponent(checkProfilingOn))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(51, 51, 51)
+                        .addComponent(writeToResults))
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -362,19 +339,15 @@ ImagePlus img;
                 .addComponent(checkFitTriple)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(checkShowFitSettings)
-                .addGap(24, 24, 24)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(estimateS2Text)
-                    .addComponent(estimateS2TF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(comboBoxDataList, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 29, Short.MAX_VALUE)
+                .addGap(38, 38, 38)
                 .addComponent(checkProfilingOn)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGap(31, 31, 31)
                 .addComponent(writeToResults)
-                .addGap(32, 32, 32))
+                .addContainerGap(36, Short.MAX_VALUE))
         );
 
         pack();
@@ -383,7 +356,6 @@ ImagePlus img;
     private void getProfileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_getProfileActionPerformed
         numCycles = Integer.parseInt(numCyclesTF.getText());
         imagesPerCycle = Integer.parseInt(imagesPerCycleTF.getText());
-        estimateS2 = Integer.parseInt(estimateS2TF.getText());
         img = WindowManager.getCurrentImage();
         profileGet = true;
         ImageProcessor ip2 = img.getProcessor();
@@ -408,7 +380,6 @@ ImagePlus img;
 
     private void writeToResultsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_writeToResultsActionPerformed
         img = WindowManager.getCurrentImage();
-        saveResultsToTable = true;
         profileGet = true;
         ImageProcessor ip3 = img.getProcessor();
         runIPandSave(ip3);
@@ -472,27 +443,6 @@ ImagePlus img;
         }
     }//GEN-LAST:event_checkProfilingOnItemStateChanged
 
-    private void estimateS2TFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_estimateS2TFActionPerformed
-        try {
-            estimateS2 = Integer.parseInt(estimateS2TF.getText());
-        } catch (NumberFormatException e) {
-            e.printStackTrace();
-        }
-    }//GEN-LAST:event_estimateS2TFActionPerformed
-
-    private void estimateS2TFPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_estimateS2TFPropertyChange
-        try {
-            estimateS2 = Integer.parseInt(estimateS2TF.getText());
-        } catch (NumberFormatException e) {
-            e.printStackTrace();
-        }
-    }//GEN-LAST:event_estimateS2TFPropertyChange
-
-    private void estimateVarianceFromImageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_estimateVarianceFromImageActionPerformed
-            int varEstimate = (int) estimateVarianceFromImage();
-            estimateS2TF.setText(Integer.toString(varEstimate));
-    }//GEN-LAST:event_estimateVarianceFromImageActionPerformed
-
     private void checkFitDoubleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkFitDoubleActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_checkFitDoubleActionPerformed
@@ -544,6 +494,10 @@ ImagePlus img;
 
     }//GEN-LAST:event_checkShowFitSettingsItemStateChanged
 
+    private void checkShowFitSettingsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkShowFitSettingsActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_checkShowFitSettingsActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -589,9 +543,6 @@ ImagePlus img;
     private javax.swing.JCheckBox checkProfilingOn;
     private javax.swing.JCheckBox checkShowFitSettings;
     private javax.swing.JComboBox<String> comboBoxDataList;
-    private javax.swing.JTextField estimateS2TF;
-    private javax.swing.JLabel estimateS2Text;
-    private javax.swing.JButton estimateVarianceFromImage;
     private javax.swing.JButton getProfile;
     private javax.swing.JTextField imagesPerCycleTF;
     private javax.swing.JLabel imagesPerCycleText;
@@ -1260,8 +1211,8 @@ ImagePlus img;
         cf.doCustomFit(this, 7, fitFunction,  fitparam, initialParaVara, showFitSettings); //triple exponential decay with offset 
         double[] fittedParam = cf.getParams();
         double[] residuals = cf.getResiduals();
-        double Chi2 = calculateReducedChi2(residuals, yCF);
         double[] theFit = getTheFit(fittedParam, cf.getXPoints());
+        double Chi2 = calculateChi2(residuals, theFit);
         for (int i = 0; i < theFit.length; i++) {
             theFitAndParameters[0][i][0] = theFit[i];
             theFitAndParameters[2][0][i] = residuals[i];
@@ -1299,8 +1250,8 @@ ImagePlus img;
         cf.doCustomFit(this, 5, fitFunction,  fitparam, initialParaVara, showFitSettings); //double exponential decay with offset 
         double[] fittedParam = cf.getParams();
         double[] residuals = cf.getResiduals();
-        double Chi2 = calculateReducedChi2(residuals, yCF);
         double[] theFit = getTheFit(fittedParam, cf.getXPoints());
+        double Chi2 = calculateChi2(residuals, theFit);
         for (int i = 0; i < theFit.length; i++) {
             theFitAndParameters[0][i][0] = theFit[i];
             theFitAndParameters[2][0][i] = residuals[i];
@@ -1333,8 +1284,8 @@ ImagePlus img;
         cf.doFit(11); //single exponential decay with offset 
         double[] fittedParam = cf.getParams();
         double[] residuals = cf.getResiduals();
-        double Chi2 = calculateReducedChi2(residuals, yCF);
         double[] theFit = getTheFit(fittedParam, cf.getXPoints());
+        double Chi2 = calculateChi2(residuals, theFit);
         for (int i = 0; i < theFit.length; i++) {
             theFitAndParameters[0][i][0] = theFit[i];
             theFitAndParameters[2][0][i] = residuals[i];
@@ -1382,56 +1333,18 @@ ImagePlus img;
         return theFit;
     }
 
-    public double calculateReducedChi2(double[] residualArray, double[] dataArray) {
+    public double calculateChi2(double[] residualArray, double[] fitArray) {
         double chi2ToReturn = 0;
-        int dataPoints = 0;
         double[] residualArray2 = multiplyTwoArrays(residualArray, residualArray);
-        double[] arrayToSum = divideArrayByValue(residualArray2, estimateS2);
+        double[] arrayToSum = divideTwoArrays(residualArray2, fitArray);
         for (int tp = 0; tp < arrayToSum.length; tp++) {
             if (!Double.isInfinite(arrayToSum[tp])) {
                 chi2ToReturn = chi2ToReturn + arrayToSum[tp];
-                dataPoints++;
             }
         }
-        int df;
-        if(fitTriple)
-            df = 8;
-        if(fitDouble)
-            df = 6;
-        else
-            df = 4;
-        return chi2ToReturn / (dataPoints - df);//divide by number of data points minus df
+        return chi2ToReturn;
     }
     
-      public double estimateVarianceFromImage() {
-        img = IJ.getImage();
-        int nSlices = img.getNSlices();
-        int size = img.getNFrames();
-        if (size == 1)//in case the stack is read as a Z stack instead of T stack
-        {
-            size = nSlices;
-        }
-        int currentchannel = img.getC() - 1;
-        int currentZ = img.getZ() - 1;
-        Calibration cal = img.getCalibration();
-        img.setC(currentchannel + 1);
-        double[] values = new double[size];
-        for (int i = 1; i <= size; i++) {
-            if (img.getNFrames() == 1) {
-                img.setZ(i);
-            } else {
-                img.setT(i);
-            }
-            ImageProcessor ip = img.getProcessor();
-            ImageStatistics stats = ImageStatistics.getStatistics(ip, MEAN, cal);
-            values[i - 1] = (double) stats.mean;
-        }
-        double meanValue = getMeanOfArray(values);
-        double [] residualArray = subtractValueFromArray(values,meanValue);
-        double [] residualArray2 = multiplyTwoArrays(residualArray, residualArray);
-        return getSumOfArray(residualArray2) / (size - 1);
-    }
-
     public static double getMeanOfArray(double[] theArray) {
         double sum = 0;
         for (int i = 0; i < theArray.length; i++) {
@@ -1566,65 +1479,9 @@ ImagePlus img;
         return arrayToReturn;
     }
 
-
-    private static double[][] copyRange2DArray(double[][] srcArray, int srcPos0, int length) {
-        double[] desArray0 = Arrays.copyOfRange(srcArray[0], srcPos0, srcPos0 + length);
-        double[] desArray1 = Arrays.copyOfRange(srcArray[1], srcPos0, srcPos0 + length);
-        double[][] returnArray = {desArray0, desArray1};
-        return returnArray;
-    }
-
     @Override
     public void actionPerformed(ActionEvent e) {
-        Object ae = e.getSource();
-        if (ae == getProfile) {
-            img = WindowManager.getCurrentImage();
-            profileGet = true;
-            ImageProcessor ip2 = img.getProcessor();
-            runIP(ip2);
-        }
-        if (ae == numCyclesTF) {
-            numCycles = Integer.parseInt(numCyclesTF.getText());
-        }
-        if (ae == imagesPerCycleTF) {
-            imagesPerCycle = Integer.parseInt(imagesPerCycleTF.getText());
-        }
-        if (ae == checkCF) {
-            if (checkCF.isSelected()) {
-                fitCurves = true;
-            }
-            if (!checkCF.isSelected()) {
-                fitCurves = false;
-            }
-        }
-        if (ae == checkBkg) {
-            if (checkBkg.isSelected()) {
-                bkGrdSubtract = true;
-            }
-            if (!checkBkg.isSelected()) {
-                bkGrdSubtract = false;
-            }
-        }
-
-        if (ae == comboBoxDataList) {
-            JComboBox cb = (JComboBox) e.getSource();
-            bkGrdImage = (String) cb.getSelectedItem();
-        }
-
-        if (ae == checkProfilingOn) {
-            if (checkProfilingOn.isSelected()) {
-                ProfilingOn = true;
-            }
-            if (!checkProfilingOn.isSelected()) {
-                ProfilingOn = false;
-            }
-        }
-        if (ae == writeToResults) {
-            img = WindowManager.getCurrentImage();
-            saveResultsToTable = true;
-            ImageProcessor ip3 = img.getProcessor();
-            runIPandSave(ip3);
-        }
+        
     }
 
     @Override
@@ -1672,6 +1529,7 @@ ImagePlus img;
     @Override
     public void run(String arg) {
         if (IJ.versionLessThan("1.31i")) {
+            IJ.showMessage("ImageJ version", "Please upgrade ImageJ");
             return;
         }
         img = WindowManager.getCurrentImage();
