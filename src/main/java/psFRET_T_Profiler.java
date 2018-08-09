@@ -525,10 +525,13 @@ ImagePlus img;
         }
         //</editor-fold>
 
+        new ij.ImageJ();
+        
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 new psFRET_T_Profiler().setVisible(true);
+                pluginWindowOpen=true;
             }
         });
     }
@@ -646,6 +649,11 @@ ImagePlus img;
             IJ.showMessage("psFRET T Profiler", "Background subtraction requires selection of background data from the results table");
             return;
         }
+        rMan = RoiManager.getRoiManager();
+        if (rMan.getCount() == 0) {
+            IJ.showMessage("psFRET T Profiler", "You must add at least one ROI to the ROI Manager to set results to the results table");
+            return;
+        }
         double[] timeData = new double[size];
         try {
             timeData = getTimingPerPlane(id, size, currentZ, currentchannel);
@@ -654,11 +662,6 @@ ImagePlus img;
         }
         IJ.resetMinAndMax(img);
 
-        rMan = RoiManager.getRoiManager();
-        if (rMan.getCount() == 0) {
-            IJ.showMessage("psFRET T Profiler", "You must add at least one ROI to the ROI Manager to set results to the results table");
-            return;
-        }
         rMan.runCommand("Select All");
         rMan.runCommand("Save", filePath + name.substring(0, name.indexOf(".")) + "_RoiSet.zip");
         Roi[] roiArray = rMan.getRoisAsArray();
@@ -1145,29 +1148,29 @@ ImagePlus img;
             for (int i = 0; i < rt.size(); i++) {
                 if (rt.getStringValue(ROIColumnHeading, i).equals(ROI)) {
                     matchOrIndexFound = true;
-                    rt.setValue(ROIColumnHeading, row, ROI);
-                    rt.setValue(a1ColumnHeading, row, valuesA1);
-                    rt.setValue(k1ColumnHeading, row, valuesK1);
-                    rt.setValue(a2ColumnHeading, row, valuesA2);
-                    rt.setValue(k2ColumnHeading, row, valuesK2);
-                    rt.setValue(a3ColumnHeading, row, valuesA3);
-                    rt.setValue(k3ColumnHeading, row, valuesK3);
-                    rt.setValue(oColumnHeading, row, valuesOffset);
-                    rt.setValue(Chi2ColumnHeading, row, valuesChi2);
-                    rt.setValue(WMKColumnHeading, row, valuesWMK);
+                    rt.setValue(ROIColumnHeading, i, ROI);
+                    rt.setValue(a1ColumnHeading, i, valuesA1);
+                    rt.setValue(k1ColumnHeading, i, valuesK1);
+                    rt.setValue(a2ColumnHeading, i, valuesA2);
+                    rt.setValue(k2ColumnHeading, i, valuesK2);
+                    rt.setValue(a3ColumnHeading, i, valuesA3);
+                    rt.setValue(k3ColumnHeading, i, valuesK3);
+                    rt.setValue(oColumnHeading, i, valuesOffset);
+                    rt.setValue(Chi2ColumnHeading, i, valuesChi2);
+                    rt.setValue(WMKColumnHeading, i, valuesWMK);
                 }
                 if (!matchOrIndexFound && rt.getStringValue(ROIColumnHeading, i).equals("NaN") && !rt.getStringValue(ROIColumnHeading, i - 1).equals("NaN")) {
                     matchOrIndexFound = true;
-                    rt.setValue(ROIColumnHeading, row, ROI);
-                    rt.setValue(a1ColumnHeading, row, valuesA1);
-                    rt.setValue(k1ColumnHeading, row, valuesK1);
-                    rt.setValue(a2ColumnHeading, row, valuesA2);
-                    rt.setValue(k2ColumnHeading, row, valuesK2);
-                    rt.setValue(a3ColumnHeading, row, valuesA3);
-                    rt.setValue(k3ColumnHeading, row, valuesK3);
-                    rt.setValue(oColumnHeading, row, valuesOffset);
-                    rt.setValue(Chi2ColumnHeading, row, valuesChi2);
-                    rt.setValue(WMKColumnHeading, row, valuesWMK);
+                    rt.setValue(ROIColumnHeading, i, ROI);
+                    rt.setValue(a1ColumnHeading, i, valuesA1);
+                    rt.setValue(k1ColumnHeading, i, valuesK1);
+                    rt.setValue(a2ColumnHeading, i, valuesA2);
+                    rt.setValue(k2ColumnHeading, i, valuesK2);
+                    rt.setValue(a3ColumnHeading, i, valuesA3);
+                    rt.setValue(k3ColumnHeading, i, valuesK3);
+                    rt.setValue(oColumnHeading, i, valuesOffset);
+                    rt.setValue(Chi2ColumnHeading, i, valuesChi2);
+                    rt.setValue(WMKColumnHeading, i, valuesWMK);
                 }
             }
         }
