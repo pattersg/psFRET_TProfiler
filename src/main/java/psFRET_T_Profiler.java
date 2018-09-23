@@ -68,7 +68,9 @@ ImagePlus img;
     private static boolean fitDouble;
     private static boolean fitTriple;
     private static boolean showFitSettings;
-
+    private static int cameraOffset;
+    private static int pixCount;
+    
     RoiManager rMan;
     ResultsTable rt;
     DefaultComboBoxModel dataListModel;
@@ -103,6 +105,8 @@ ImagePlus img;
         jPanel1 = new javax.swing.JPanel();
         checkBkg = new javax.swing.JCheckBox();
         bkGrdText = new javax.swing.JLabel();
+        cameraOffsetText = new javax.swing.JLabel();
+        cameraOffsetTF = new javax.swing.JTextField();
         comboBoxDataList = new javax.swing.JComboBox<>();
         checkFitSingle = new javax.swing.JCheckBox();
         checkFitDouble = new javax.swing.JCheckBox();
@@ -189,6 +193,21 @@ ImagePlus img;
 
         bkGrdText.setText("Choose the background data");
 
+        cameraOffsetText.setText("Camera Offset");
+
+        cameraOffsetTF.setHorizontalAlignment(javax.swing.JTextField.TRAILING);
+        cameraOffsetTF.setText("0");
+        cameraOffsetTF.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cameraOffsetTFActionPerformed(evt);
+            }
+        });
+        cameraOffsetTF.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                cameraOffsetTFPropertyChange(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -196,14 +215,23 @@ ImagePlus img;
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(35, 35, 35)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(0, 44, Short.MAX_VALUE)
+                        .addComponent(cameraOffsetText)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(cameraOffsetTF, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(bkGrdText)
                     .addComponent(checkBkg))
-                .addContainerGap(47, Short.MAX_VALUE))
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addGap(27, 27, 27)
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(cameraOffsetText)
+                    .addComponent(cameraOffsetTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(checkBkg)
                 .addGap(18, 18, 18)
                 .addComponent(bkGrdText)
@@ -296,10 +324,6 @@ ImagePlus img;
                             .addComponent(checkFitDouble, javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(checkFitTriple, javax.swing.GroupLayout.Alignment.LEADING))
                         .addGap(0, 0, Short.MAX_VALUE))))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(comboBoxDataList, javax.swing.GroupLayout.PREFERRED_SIZE, 228, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(19, 19, 19))
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
@@ -315,6 +339,10 @@ ImagePlus img;
                         .addContainerGap()
                         .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(0, 0, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(comboBoxDataList, javax.swing.GroupLayout.PREFERRED_SIZE, 228, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -339,15 +367,15 @@ ImagePlus img;
                 .addComponent(checkFitTriple)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(checkShowFitSettings)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(26, 26, 26)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(comboBoxDataList, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(38, 38, 38)
+                .addGap(18, 18, 18)
                 .addComponent(checkProfilingOn)
                 .addGap(31, 31, 31)
                 .addComponent(writeToResults)
-                .addContainerGap(36, Short.MAX_VALUE))
+                .addContainerGap(19, Short.MAX_VALUE))
         );
 
         pack();
@@ -498,6 +526,14 @@ ImagePlus img;
         // TODO add your handling code here:
     }//GEN-LAST:event_checkShowFitSettingsActionPerformed
 
+    private void cameraOffsetTFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cameraOffsetTFActionPerformed
+        cameraOffset = Integer.parseInt(cameraOffsetTF.getText());
+    }//GEN-LAST:event_cameraOffsetTFActionPerformed
+
+    private void cameraOffsetTFPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_cameraOffsetTFPropertyChange
+        cameraOffset = Integer.parseInt(cameraOffsetTF.getText());
+    }//GEN-LAST:event_cameraOffsetTFPropertyChange
+
     /**
      * @param args the command line arguments
      */
@@ -538,6 +574,8 @@ ImagePlus img;
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel bkGrdText;
+    private javax.swing.JTextField cameraOffsetTF;
+    private javax.swing.JLabel cameraOffsetText;
     private javax.swing.JCheckBox checkBkg;
     private javax.swing.JCheckBox checkCF;
     private javax.swing.JCheckBox checkFitDouble;
@@ -714,7 +752,8 @@ ImagePlus img;
             ImageProcessor ip = img.getProcessor();
             ip.setRoi(roi);
             ImageStatistics stats = ImageStatistics.getStatistics(ip, MEAN, cal);
-            values[i - 1] = (double) stats.mean;
+            pixCount = (int) stats.pixelCount;
+            values[i - 1] = (double) stats.mean - cameraOffset;
         }
         if (img.getNFrames() == 1) {
             img.setZ(1);
@@ -1215,7 +1254,7 @@ ImagePlus img;
         double[] fittedParam = cf.getParams();
         double[] residuals = cf.getResiduals();
         double[] theFit = getTheFit(fittedParam, cf.getXPoints());
-        double Chi2 = calculateChi2(residuals, theFit);
+        double Chi2 = calculateReducedChi2(residuals, yCF);
         for (int i = 0; i < theFit.length; i++) {
             theFitAndParameters[0][i][0] = theFit[i];
             theFitAndParameters[2][0][i] = residuals[i];
@@ -1254,7 +1293,7 @@ ImagePlus img;
         double[] fittedParam = cf.getParams();
         double[] residuals = cf.getResiduals();
         double[] theFit = getTheFit(fittedParam, cf.getXPoints());
-        double Chi2 = calculateChi2(residuals, theFit);
+        double Chi2 = calculateReducedChi2(residuals, yCF);
         for (int i = 0; i < theFit.length; i++) {
             theFitAndParameters[0][i][0] = theFit[i];
             theFitAndParameters[2][0][i] = residuals[i];
@@ -1288,7 +1327,7 @@ ImagePlus img;
         double[] fittedParam = cf.getParams();
         double[] residuals = cf.getResiduals();
         double[] theFit = getTheFit(fittedParam, cf.getXPoints());
-        double Chi2 = calculateChi2(residuals, theFit);
+        double Chi2 = calculateReducedChi2(residuals, yCF);
         for (int i = 0; i < theFit.length; i++) {
             theFitAndParameters[0][i][0] = theFit[i];
             theFitAndParameters[2][0][i] = residuals[i];
@@ -1336,16 +1375,24 @@ ImagePlus img;
         return theFit;
     }
 
-    public double calculateChi2(double[] residualArray, double[] fitArray) {
+    public double calculateReducedChi2(double[] residualArray, double[] dataArray) {
         double chi2ToReturn = 0;
         double[] residualArray2 = multiplyTwoArrays(residualArray, residualArray);
-        double[] arrayToSum = divideTwoArrays(residualArray2, fitArray);
+        double[] dataArray1 = divideArrayByValue(dataArray, Math.sqrt(pixCount));
+        double[] arrayToSum = divideTwoArrays(residualArray2, dataArray1);
         for (int tp = 0; tp < arrayToSum.length; tp++) {
             if (!Double.isInfinite(arrayToSum[tp])) {
-                chi2ToReturn = chi2ToReturn + arrayToSum[tp];
+                chi2ToReturn += arrayToSum[tp];
             }
         }
-        return chi2ToReturn;
+        int df;
+        if(fitTriple)
+            df=8;
+        if(fitDouble)
+            df=6;
+        else
+            df=4;
+        return chi2ToReturn/(residualArray.length-df);
     }
     
     public static double getMeanOfArray(double[] theArray) {
@@ -1481,6 +1528,15 @@ ImagePlus img;
         }
         return arrayToReturn;
     }
+    
+    private static double[] multiplyArrayByValue(double[] array1, double theValue) {
+        double[] arrayToReturn = new double[array1.length];
+        for (int i = 0; i < array1.length; i++) {
+            arrayToReturn[i] = array1[i]*theValue;
+        }
+        return arrayToReturn;
+    }
+
 
     @Override
     public void actionPerformed(ActionEvent e) {
