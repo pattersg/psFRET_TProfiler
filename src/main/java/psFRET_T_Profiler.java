@@ -44,7 +44,8 @@ import ome.units.UNITS;
  * @author pattersg
  */
 public class psFRET_T_Profiler extends javax.swing.JFrame implements UserFunction, PlugIn, MouseListener, MouseMotionListener, Measurements, KeyListener, ActionListener, PropertyChangeListener, WindowListener {
-ImagePlus img;
+    ImagePlus img;
+    ImageWindow iwin;
     ImageCanvas canvas;
     ImageStatistics stats;
     PlotWindow pwin;
@@ -69,8 +70,16 @@ ImagePlus img;
     private static boolean fitTriple;
     private static boolean showFitSettings;
     private static int cameraOffset;
+    private static double cameraGain;
     private static int pixCount;
+    private static int binFactor;
+    private static int binFactorImage;
+    public double[] stdevValues;
     
+    private static double lambda;
+    private static double NA;
+    private static double pixSize;
+        
     RoiManager rMan;
     ResultsTable rt;
     DefaultComboBoxModel dataListModel;
@@ -83,6 +92,7 @@ ImagePlus img;
         dataList.add("None");
         dataListModel = new DefaultComboBoxModel(dataList);
         comboBoxDataList.setModel(dataListModel);
+        checkProfilingOn.setVisible(false);
     }
 
     /**
@@ -94,24 +104,41 @@ ImagePlus img;
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jTabbedPane1 = new javax.swing.JTabbedPane();
+        AnalysisParameters = new javax.swing.JPanel();
         getProfile = new javax.swing.JButton();
-        numCyclesTF = new javax.swing.JTextField();
-        imagesPerCycleTF = new javax.swing.JTextField();
-        numCycleText = new javax.swing.JLabel();
-        imagesPerCycleText = new javax.swing.JLabel();
         checkCF = new javax.swing.JCheckBox();
-        checkProfilingOn = new javax.swing.JCheckBox();
-        writeToResults = new javax.swing.JButton();
-        jPanel1 = new javax.swing.JPanel();
-        checkBkg = new javax.swing.JCheckBox();
-        bkGrdText = new javax.swing.JLabel();
-        cameraOffsetText = new javax.swing.JLabel();
-        cameraOffsetTF = new javax.swing.JTextField();
-        comboBoxDataList = new javax.swing.JComboBox<>();
         checkFitSingle = new javax.swing.JCheckBox();
         checkFitDouble = new javax.swing.JCheckBox();
         checkFitTriple = new javax.swing.JCheckBox();
         checkShowFitSettings = new javax.swing.JCheckBox();
+        checkBkg = new javax.swing.JCheckBox();
+        bkGrdText = new javax.swing.JLabel();
+        comboBoxDataList = new javax.swing.JComboBox<>();
+        checkProfilingOn = new javax.swing.JCheckBox();
+        writeToResults = new javax.swing.JButton();
+        ExperimentParameters = new javax.swing.JPanel();
+        cameraOffsetText = new javax.swing.JLabel();
+        cameraOffsetTF = new javax.swing.JTextField();
+        binFactorTF = new javax.swing.JTextField();
+        binFactorText = new javax.swing.JLabel();
+        cameraGainTF = new javax.swing.JTextField();
+        cameraGainText = new javax.swing.JLabel();
+        numCycleText = new javax.swing.JLabel();
+        numCyclesTF = new javax.swing.JTextField();
+        imagesPerCycleText = new javax.swing.JLabel();
+        imagesPerCycleTF = new javax.swing.JTextField();
+        binFactorImageTF = new javax.swing.JTextField();
+        binFactorImageText = new javax.swing.JLabel();
+        ObjectiveNATF = new javax.swing.JTextField();
+        ObjectiveNAText = new javax.swing.JLabel();
+        emissionLambdaTF = new javax.swing.JTextField();
+        emissionLambdaText = new javax.swing.JLabel();
+        pixelSizeTF = new javax.swing.JTextField();
+        emissionLambdaText1 = new javax.swing.JLabel();
+        ImagePixelSizeText = new javax.swing.JLabel();
+        imagePixelSizeTF = new javax.swing.JTextField();
+        ImagePixelSizeText1 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("psFRET T Profiler");
@@ -123,36 +150,6 @@ ImagePlus img;
             }
         });
 
-        numCyclesTF.setHorizontalAlignment(javax.swing.JTextField.TRAILING);
-        numCyclesTF.setText("3");
-        numCyclesTF.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                numCyclesTFActionPerformed(evt);
-            }
-        });
-        numCyclesTF.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-            public void propertyChange(java.beans.PropertyChangeEvent evt) {
-                numCyclesTFPropertyChange(evt);
-            }
-        });
-
-        imagesPerCycleTF.setHorizontalAlignment(javax.swing.JTextField.TRAILING);
-        imagesPerCycleTF.setText("300");
-        imagesPerCycleTF.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                imagesPerCycleTFActionPerformed(evt);
-            }
-        });
-        imagesPerCycleTF.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-            public void propertyChange(java.beans.PropertyChangeEvent evt) {
-                imagesPerCycleTFPropertyChange(evt);
-            }
-        });
-
-        numCycleText.setText("Number of Cycles");
-
-        imagesPerCycleText.setText("Images per Cycle");
-
         checkCF.setText("Run curve fits?");
         checkCF.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -162,86 +159,6 @@ ImagePlus img;
         checkCF.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 checkCFActionPerformed(evt);
-            }
-        });
-
-        checkProfilingOn.setText("Turn on dynamic profiling?");
-        checkProfilingOn.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                checkProfilingOnItemStateChanged(evt);
-            }
-        });
-        checkProfilingOn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                checkProfilingOnActionPerformed(evt);
-            }
-        });
-
-        writeToResults.setText("Write to Results");
-        writeToResults.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                writeToResultsActionPerformed(evt);
-            }
-        });
-
-        checkBkg.setText("Background subtract?");
-        checkBkg.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                checkBkgItemStateChanged(evt);
-            }
-        });
-
-        bkGrdText.setText("Choose the background data");
-
-        cameraOffsetText.setText("Camera Offset");
-
-        cameraOffsetTF.setHorizontalAlignment(javax.swing.JTextField.TRAILING);
-        cameraOffsetTF.setText("0");
-        cameraOffsetTF.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cameraOffsetTFActionPerformed(evt);
-            }
-        });
-        cameraOffsetTF.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-            public void propertyChange(java.beans.PropertyChangeEvent evt) {
-                cameraOffsetTFPropertyChange(evt);
-            }
-        });
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(35, 35, 35)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(0, 44, Short.MAX_VALUE)
-                        .addComponent(cameraOffsetText)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(cameraOffsetTF, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(bkGrdText)
-                    .addComponent(checkBkg))
-                .addContainerGap())
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(cameraOffsetText)
-                    .addComponent(cameraOffsetTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(checkBkg)
-                .addGap(18, 18, 18)
-                .addComponent(bkGrdText)
-                .addContainerGap(20, Short.MAX_VALUE))
-        );
-
-        comboBoxDataList.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        comboBoxDataList.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                comboBoxDataListItemStateChanged(evt);
             }
         });
 
@@ -293,70 +210,78 @@ ImagePlus img;
             }
         });
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(35, 35, 35)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(checkShowFitSettings)
-                        .addGap(88, 88, 88))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(checkCF, javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                .addGap(9, 9, 9)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(numCycleText)
-                                    .addComponent(imagesPerCycleText))
-                                .addGap(18, 18, 18)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(imagesPerCycleTF)
-                                    .addComponent(numCyclesTF, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(48, 48, 48)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(checkFitSingle, javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(checkFitDouble, javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(checkFitTriple, javax.swing.GroupLayout.Alignment.LEADING))
-                        .addGap(0, 0, Short.MAX_VALUE))))
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(73, 73, 73)
-                        .addComponent(getProfile))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(31, 31, 31)
-                        .addComponent(checkProfilingOn))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(51, 51, 51)
-                        .addComponent(writeToResults))
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(0, 0, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(comboBoxDataList, javax.swing.GroupLayout.PREFERRED_SIZE, 228, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18))
+        checkBkg.setText("Background subtract?");
+        checkBkg.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                checkBkgItemStateChanged(evt);
+            }
+        });
+
+        bkGrdText.setText("Choose the background data");
+
+        comboBoxDataList.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        comboBoxDataList.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                comboBoxDataListItemStateChanged(evt);
+            }
+        });
+
+        checkProfilingOn.setText("Turn on dynamic profiling?");
+        checkProfilingOn.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                checkProfilingOnItemStateChanged(evt);
+            }
+        });
+        checkProfilingOn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                checkProfilingOnActionPerformed(evt);
+            }
+        });
+
+        writeToResults.setText("Write to Results");
+        writeToResults.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                writeToResultsActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout AnalysisParametersLayout = new javax.swing.GroupLayout(AnalysisParameters);
+        AnalysisParameters.setLayout(AnalysisParametersLayout);
+        AnalysisParametersLayout.setHorizontalGroup(
+            AnalysisParametersLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(AnalysisParametersLayout.createSequentialGroup()
+                .addGroup(AnalysisParametersLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(AnalysisParametersLayout.createSequentialGroup()
+                        .addGap(32, 32, 32)
+                        .addGroup(AnalysisParametersLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(checkCF)
+                            .addGroup(AnalysisParametersLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(checkShowFitSettings)
+                                .addGroup(AnalysisParametersLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(checkFitSingle, javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(checkFitDouble, javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(checkFitTriple, javax.swing.GroupLayout.Alignment.LEADING)))
+                            .addComponent(checkBkg)
+                            .addComponent(checkProfilingOn)
+                            .addGroup(AnalysisParametersLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(getProfile, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, AnalysisParametersLayout.createSequentialGroup()
+                                    .addGap(12, 12, 12)
+                                    .addGroup(AnalysisParametersLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(bkGrdText)
+                                        .addGroup(AnalysisParametersLayout.createSequentialGroup()
+                                            .addGap(31, 31, 31)
+                                            .addComponent(writeToResults)))))))
+                    .addGroup(AnalysisParametersLayout.createSequentialGroup()
+                        .addGap(20, 20, 20)
+                        .addComponent(comboBoxDataList, javax.swing.GroupLayout.PREFERRED_SIZE, 228, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(39, Short.MAX_VALUE))
         );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(22, 22, 22)
-                .addComponent(getProfile)
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(numCyclesTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(numCycleText))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(imagesPerCycleText)
-                    .addComponent(imagesPerCycleTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+        AnalysisParametersLayout.setVerticalGroup(
+            AnalysisParametersLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(AnalysisParametersLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(getProfile, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(checkCF)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -365,18 +290,294 @@ ImagePlus img;
                 .addComponent(checkFitDouble)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(checkFitTriple)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(checkShowFitSettings)
-                .addGap(26, 26, 26)
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(28, 28, 28)
+                .addComponent(checkBkg)
+                .addGap(18, 18, 18)
+                .addComponent(bkGrdText)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(comboBoxDataList, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(checkProfilingOn)
-                .addGap(31, 31, 31)
+                .addGap(18, 18, 18)
                 .addComponent(writeToResults)
-                .addContainerGap(19, Short.MAX_VALUE))
+                .addContainerGap(11, Short.MAX_VALUE))
         );
+
+        jTabbedPane1.addTab("Analysis Settings", AnalysisParameters);
+
+        cameraOffsetText.setText("Camera Offset");
+
+        cameraOffsetTF.setHorizontalAlignment(javax.swing.JTextField.TRAILING);
+        cameraOffsetTF.setText("100");
+        cameraOffsetTF.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cameraOffsetTFActionPerformed(evt);
+            }
+        });
+        cameraOffsetTF.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                cameraOffsetTFPropertyChange(evt);
+            }
+        });
+
+        binFactorTF.setHorizontalAlignment(javax.swing.JTextField.TRAILING);
+        binFactorTF.setText("4");
+        binFactorTF.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                binFactorTFActionPerformed(evt);
+            }
+        });
+        binFactorTF.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                binFactorTFPropertyChange(evt);
+            }
+        });
+
+        binFactorText.setText("Camera Bin Factor");
+
+        cameraGainTF.setHorizontalAlignment(javax.swing.JTextField.TRAILING);
+        cameraGainTF.setText("2.17");
+        cameraGainTF.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cameraGainTFActionPerformed(evt);
+            }
+        });
+        cameraGainTF.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                cameraGainTFPropertyChange(evt);
+            }
+        });
+
+        cameraGainText.setText("Camera Gain");
+
+        numCycleText.setText("Number of Cycles");
+
+        numCyclesTF.setHorizontalAlignment(javax.swing.JTextField.TRAILING);
+        numCyclesTF.setText("3");
+        numCyclesTF.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                numCyclesTFActionPerformed(evt);
+            }
+        });
+        numCyclesTF.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                numCyclesTFPropertyChange(evt);
+            }
+        });
+
+        imagesPerCycleText.setText("Images per Cycle");
+
+        imagesPerCycleTF.setHorizontalAlignment(javax.swing.JTextField.TRAILING);
+        imagesPerCycleTF.setText("300");
+        imagesPerCycleTF.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                imagesPerCycleTFActionPerformed(evt);
+            }
+        });
+        imagesPerCycleTF.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                imagesPerCycleTFPropertyChange(evt);
+            }
+        });
+
+        binFactorImageTF.setHorizontalAlignment(javax.swing.JTextField.TRAILING);
+        binFactorImageTF.setText("1");
+        binFactorImageTF.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                binFactorImageTFActionPerformed(evt);
+            }
+        });
+        binFactorImageTF.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                binFactorImageTFPropertyChange(evt);
+            }
+        });
+
+        binFactorImageText.setText("Image Bin Factor (Post)");
+
+        ObjectiveNATF.setHorizontalAlignment(javax.swing.JTextField.TRAILING);
+        ObjectiveNATF.setText("1.4");
+        ObjectiveNATF.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ObjectiveNATFActionPerformed(evt);
+            }
+        });
+        ObjectiveNATF.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                ObjectiveNATFPropertyChange(evt);
+            }
+        });
+
+        ObjectiveNAText.setText("Objective NA");
+
+        emissionLambdaTF.setHorizontalAlignment(javax.swing.JTextField.TRAILING);
+        emissionLambdaTF.setText("500");
+        emissionLambdaTF.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                emissionLambdaTFActionPerformed(evt);
+            }
+        });
+        emissionLambdaTF.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                emissionLambdaTFPropertyChange(evt);
+            }
+        });
+
+        emissionLambdaText.setText("Emission wavelength (nm)");
+
+        pixelSizeTF.setHorizontalAlignment(javax.swing.JTextField.TRAILING);
+        pixelSizeTF.setText("39");
+        pixelSizeTF.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                pixelSizeTFActionPerformed(evt);
+            }
+        });
+        pixelSizeTF.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                pixelSizeTFPropertyChange(evt);
+            }
+        });
+
+        emissionLambdaText1.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        emissionLambdaText1.setText("Unbinned pixel size (nm)");
+
+        ImagePixelSizeText.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        ImagePixelSizeText.setText("Final Image Pixel size =");
+
+        imagePixelSizeTF.setEditable(false);
+        imagePixelSizeTF.setHorizontalAlignment(javax.swing.JTextField.TRAILING);
+        imagePixelSizeTF.setText("156");
+        imagePixelSizeTF.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                imagePixelSizeTFActionPerformed(evt);
+            }
+        });
+        imagePixelSizeTF.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                imagePixelSizeTFPropertyChange(evt);
+            }
+        });
+
+        ImagePixelSizeText1.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        ImagePixelSizeText1.setText("nm");
+
+        javax.swing.GroupLayout ExperimentParametersLayout = new javax.swing.GroupLayout(ExperimentParameters);
+        ExperimentParameters.setLayout(ExperimentParametersLayout);
+        ExperimentParametersLayout.setHorizontalGroup(
+            ExperimentParametersLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, ExperimentParametersLayout.createSequentialGroup()
+                .addGroup(ExperimentParametersLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(ExperimentParametersLayout.createSequentialGroup()
+                        .addComponent(ImagePixelSizeText, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(imagePixelSizeTF, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(ImagePixelSizeText1))
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, ExperimentParametersLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(ExperimentParametersLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(ExperimentParametersLayout.createSequentialGroup()
+                                .addGroup(ExperimentParametersLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(emissionLambdaText, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, ExperimentParametersLayout.createSequentialGroup()
+                                        .addGap(0, 0, Short.MAX_VALUE)
+                                        .addGroup(ExperimentParametersLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(numCycleText, javax.swing.GroupLayout.Alignment.TRAILING)
+                                            .addComponent(imagesPerCycleText, javax.swing.GroupLayout.Alignment.TRAILING)
+                                            .addComponent(ObjectiveNAText, javax.swing.GroupLayout.Alignment.TRAILING))))
+                                .addGap(23, 23, 23))
+                            .addGroup(ExperimentParametersLayout.createSequentialGroup()
+                                .addComponent(emissionLambdaText1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGap(27, 27, 27)))
+                        .addGroup(ExperimentParametersLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(ObjectiveNATF, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(imagesPerCycleTF, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(emissionLambdaTF, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(numCyclesTF, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(pixelSizeTF, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, ExperimentParametersLayout.createSequentialGroup()
+                        .addGap(23, 23, 23)
+                        .addGroup(ExperimentParametersLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(cameraGainText)
+                            .addComponent(binFactorText)
+                            .addComponent(cameraOffsetText)
+                            .addComponent(binFactorImageText))
+                        .addGap(18, 18, 18)
+                        .addGroup(ExperimentParametersLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(binFactorTF, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(cameraOffsetTF)
+                            .addComponent(cameraGainTF, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(binFactorImageTF))))
+                .addGap(64, 64, 64))
+        );
+        ExperimentParametersLayout.setVerticalGroup(
+            ExperimentParametersLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(ExperimentParametersLayout.createSequentialGroup()
+                .addGap(15, 15, 15)
+                .addGroup(ExperimentParametersLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(numCyclesTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(numCycleText))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(ExperimentParametersLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(imagesPerCycleText)
+                    .addComponent(imagesPerCycleTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(27, 27, 27)
+                .addGroup(ExperimentParametersLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(ObjectiveNATF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(ObjectiveNAText))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(ExperimentParametersLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(emissionLambdaTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(emissionLambdaText))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(ExperimentParametersLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(pixelSizeTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(emissionLambdaText1))
+                .addGap(30, 30, 30)
+                .addGroup(ExperimentParametersLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(binFactorImageTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(binFactorImageText, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(18, 18, 18)
+                .addGroup(ExperimentParametersLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(binFactorText)
+                    .addComponent(binFactorTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(ExperimentParametersLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(cameraOffsetText)
+                    .addComponent(cameraOffsetTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(ExperimentParametersLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(cameraGainText)
+                    .addComponent(cameraGainTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(30, 30, 30)
+                .addGroup(ExperimentParametersLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(ImagePixelSizeText)
+                    .addComponent(imagePixelSizeTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(ImagePixelSizeText1))
+                .addGap(16, 16, 16))
+        );
+
+        jTabbedPane1.addTab("Experiment/Image", ExperimentParameters);
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 308, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 471, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
+        );
+
+        jTabbedPane1.getAccessibleContext().setAccessibleName("Analysis Parameters");
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -384,7 +585,13 @@ ImagePlus img;
     private void getProfileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_getProfileActionPerformed
         numCycles = Integer.parseInt(numCyclesTF.getText());
         imagesPerCycle = Integer.parseInt(imagesPerCycleTF.getText());
-        img = WindowManager.getCurrentImage();
+        cameraOffset = Integer.parseInt(cameraOffsetTF.getText()) * (binFactor*binFactor);
+        binFactor = Integer.parseInt(binFactorTF.getText());
+        if(img==null){
+            img = WindowManager.getCurrentImage();
+        }else{
+            WindowManager.setTempCurrentImage(img);
+        }
         profileGet = true;
         ImageProcessor ip2 = img.getProcessor();
         runIP(ip2);
@@ -527,12 +734,74 @@ ImagePlus img;
     }//GEN-LAST:event_checkShowFitSettingsActionPerformed
 
     private void cameraOffsetTFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cameraOffsetTFActionPerformed
-        cameraOffset = Integer.parseInt(cameraOffsetTF.getText());
+        cameraOffset = Integer.parseInt(cameraOffsetTF.getText()) * (binFactor*binFactor);
     }//GEN-LAST:event_cameraOffsetTFActionPerformed
 
     private void cameraOffsetTFPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_cameraOffsetTFPropertyChange
-        cameraOffset = Integer.parseInt(cameraOffsetTF.getText());
+        cameraOffset = Integer.parseInt(cameraOffsetTF.getText()) * (binFactor*binFactor);
     }//GEN-LAST:event_cameraOffsetTFPropertyChange
+
+    private void binFactorTFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_binFactorTFActionPerformed
+        binFactor = Integer.parseInt(binFactorTF.getText());
+        imagePixelSizeTF.setText(String.valueOf((int)pixSize*binFactor*binFactorImage));
+    }//GEN-LAST:event_binFactorTFActionPerformed
+
+    private void binFactorTFPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_binFactorTFPropertyChange
+        binFactor = Integer.parseInt(binFactorTF.getText());
+        imagePixelSizeTF.setText(String.valueOf((int)pixSize*binFactor*binFactorImage));
+    }//GEN-LAST:event_binFactorTFPropertyChange
+
+    private void cameraGainTFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cameraGainTFActionPerformed
+        cameraGain = Double.parseDouble(cameraGainTF.getText());
+    }//GEN-LAST:event_cameraGainTFActionPerformed
+
+    private void cameraGainTFPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_cameraGainTFPropertyChange
+        cameraGain = Double.parseDouble(cameraGainTF.getText());
+    }//GEN-LAST:event_cameraGainTFPropertyChange
+
+    private void binFactorImageTFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_binFactorImageTFActionPerformed
+        binFactorImage = Integer.parseInt(binFactorImageTF.getText());
+        imagePixelSizeTF.setText(String.valueOf((int)pixSize*binFactor*binFactorImage));
+    }//GEN-LAST:event_binFactorImageTFActionPerformed
+
+    private void binFactorImageTFPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_binFactorImageTFPropertyChange
+        binFactorImage = Integer.parseInt(binFactorImageTF.getText());
+        imagePixelSizeTF.setText(String.valueOf((int)pixSize*binFactor*binFactorImage));
+    }//GEN-LAST:event_binFactorImageTFPropertyChange
+
+    private void ObjectiveNATFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ObjectiveNATFActionPerformed
+        NA = Double.parseDouble(ObjectiveNATF.getText());
+    }//GEN-LAST:event_ObjectiveNATFActionPerformed
+
+    private void ObjectiveNATFPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_ObjectiveNATFPropertyChange
+        NA = Double.parseDouble(ObjectiveNATF.getText());
+    }//GEN-LAST:event_ObjectiveNATFPropertyChange
+
+    private void emissionLambdaTFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_emissionLambdaTFActionPerformed
+        lambda = Double.parseDouble(emissionLambdaTF.getText());
+    }//GEN-LAST:event_emissionLambdaTFActionPerformed
+
+    private void emissionLambdaTFPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_emissionLambdaTFPropertyChange
+        lambda = Double.parseDouble(emissionLambdaTF.getText());
+    }//GEN-LAST:event_emissionLambdaTFPropertyChange
+
+    private void pixelSizeTFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pixelSizeTFActionPerformed
+        pixSize = Double.parseDouble(pixelSizeTF.getText());
+        imagePixelSizeTF.setText(String.valueOf((int)pixSize*binFactor*binFactorImage));
+    }//GEN-LAST:event_pixelSizeTFActionPerformed
+
+    private void pixelSizeTFPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_pixelSizeTFPropertyChange
+        pixSize = Double.parseDouble(pixelSizeTF.getText());
+        imagePixelSizeTF.setText(String.valueOf((int)pixSize*binFactor*binFactorImage));
+    }//GEN-LAST:event_pixelSizeTFPropertyChange
+
+    private void imagePixelSizeTFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_imagePixelSizeTFActionPerformed
+        imagePixelSizeTF.setText(String.valueOf((int)pixSize*binFactor*binFactorImage));
+    }//GEN-LAST:event_imagePixelSizeTFActionPerformed
+
+    private void imagePixelSizeTFPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_imagePixelSizeTFPropertyChange
+        imagePixelSizeTF.setText(String.valueOf((int)pixSize*binFactor*binFactorImage));
+    }//GEN-LAST:event_imagePixelSizeTFPropertyChange
 
     /**
      * @param args the command line arguments
@@ -573,7 +842,19 @@ ImagePlus img;
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel AnalysisParameters;
+    private javax.swing.JPanel ExperimentParameters;
+    private javax.swing.JLabel ImagePixelSizeText;
+    private javax.swing.JLabel ImagePixelSizeText1;
+    private javax.swing.JTextField ObjectiveNATF;
+    private javax.swing.JLabel ObjectiveNAText;
+    private javax.swing.JTextField binFactorImageTF;
+    private javax.swing.JLabel binFactorImageText;
+    private javax.swing.JTextField binFactorTF;
+    private javax.swing.JLabel binFactorText;
     private javax.swing.JLabel bkGrdText;
+    private javax.swing.JTextField cameraGainTF;
+    private javax.swing.JLabel cameraGainText;
     private javax.swing.JTextField cameraOffsetTF;
     private javax.swing.JLabel cameraOffsetText;
     private javax.swing.JCheckBox checkBkg;
@@ -584,12 +865,17 @@ ImagePlus img;
     private javax.swing.JCheckBox checkProfilingOn;
     private javax.swing.JCheckBox checkShowFitSettings;
     private javax.swing.JComboBox<String> comboBoxDataList;
+    private javax.swing.JTextField emissionLambdaTF;
+    private javax.swing.JLabel emissionLambdaText;
+    private javax.swing.JLabel emissionLambdaText1;
     private javax.swing.JButton getProfile;
+    private javax.swing.JTextField imagePixelSizeTF;
     private javax.swing.JTextField imagesPerCycleTF;
     private javax.swing.JLabel imagesPerCycleText;
-    private javax.swing.JPanel jPanel1;
+    private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JLabel numCycleText;
     private javax.swing.JTextField numCyclesTF;
+    private javax.swing.JTextField pixelSizeTF;
     private javax.swing.JButton writeToResults;
     // End of variables declaration//GEN-END:variables
    
@@ -597,7 +883,18 @@ ImagePlus img;
         if (dialogCanceled) {
             return;
         }
-        ImagePlus img = WindowManager.getCurrentImage();
+        img = WindowManager.getCurrentImage();
+        img = IJ.getImage();
+        iwin = img.getWindow();
+        iwin.addWindowListener(new WindowAdapter()
+        {
+            @Override
+            public void windowClosed(WindowEvent e)
+            {
+                img = null;
+                iwin = null;
+            }
+        });
         this.img = img;
         if (img.getStackSize() < 2) {
             IJ.showMessage("psFRET T Profiler", "This command requires a stack.");
@@ -662,6 +959,8 @@ ImagePlus img;
             return;
         }
         img = WindowManager.getCurrentImage();
+        img = IJ.getImage();
+        iwin = img.getWindow();
         this.img = img;
         if (img.getStackSize() < 2) {
             IJ.showMessage("psFRET T Profiler", "This command requires a stack.");
@@ -739,6 +1038,7 @@ ImagePlus img;
         int currentchannel = img.getC() - 1;
         int currentZ = img.getZ() - 1;
         double[] values = new double[size];
+        stdevValues = new double[size];
         Rectangle r = roi.getBoundingRect();
         Calibration cal = img.getCalibration();
         //ROI with Area > 0
@@ -753,7 +1053,9 @@ ImagePlus img;
             ip.setRoi(roi);
             ImageStatistics stats = ImageStatistics.getStatistics(ip, MEAN, cal);
             pixCount = (int) stats.pixelCount;
-            values[i - 1] = (double) stats.mean - cameraOffset;
+            values[i - 1] = ((double) stats.mean - cameraOffset);//*pixCount;
+            stdevValues[i - 1] = (double) stats.stdDev;
+            //IJ.log("mean="+(double) stats.mean+"   pixCount="+(int) stats.pixelCount+"  stdDev="+stats.stdDev);
         }
         if (img.getNFrames() == 1) {
             img.setZ(1);
@@ -917,7 +1219,11 @@ ImagePlus img;
            //residuals plot
             Plot plotResiduals = new Plot("residuals", xLabel, yLabel);
             plotResiduals.add("circles", x4Plot, yResiduals);
-             if (pwin2 == null) {
+            
+            //double[] yResidualsNorm = divideTwoArrays(yResiduals,y4Plot);
+            //plotResiduals.add("circles", x4Plot, yResidualsNorm);
+     
+            if (pwin2 == null) {
                 pwin2 = plotResiduals.show();
             } else {
                 pwin2.drawPlot(plotResiduals);
@@ -1267,7 +1573,7 @@ ImagePlus img;
         theFitAndParameters[1][5][0] = fittedParam[5];//k3 rate constant
         theFitAndParameters[1][6][0] = fittedParam[6];//offset
         theFitAndParameters[1][7][0] = Chi2;//reduced Chi-square    
-        
+
         }else if (fitDouble){
         String fitFunction = "y = a*exp(-bx) + c*exp(-dx) + e";
         double guess_a1 = (firstframeint - lastframeint)/2;
@@ -1304,7 +1610,7 @@ ImagePlus img;
         theFitAndParameters[1][3][0] = fittedParam[3];//k2 rate constant
         theFitAndParameters[1][6][0] = fittedParam[4];//offset
         theFitAndParameters[1][7][0] = Chi2;//reduced Chi-square        
-        
+
         }else{
             
         double guess_a1 = firstframeint - lastframeint;
@@ -1336,6 +1642,7 @@ ImagePlus img;
         theFitAndParameters[1][1][0] = fittedParam[1];//b rate constant	
         theFitAndParameters[1][6][0] = fittedParam[2];//c offset
         theFitAndParameters[1][7][0] = Chi2;//reduced Chi-square
+
         }
 
         return theFitAndParameters;
@@ -1376,23 +1683,53 @@ ImagePlus img;
     }
 
     public double calculateReducedChi2(double[] residualArray, double[] dataArray) {
+        double AiryRadius = 1.22*lambda/NA;         
+        double PSFArea = Math.PI*AiryRadius*AiryRadius;        
+        double numPixelsInPSF = PSFArea/(pixSize*pixSize);
         double chi2ToReturn = 0;
+        double weightedAverageVariance = 0;
+        double sumWeightedVariance = 0;        
+        double pixCountNew= pixCount*binFactorImage*binFactorImage;//in case of post-processing bin averaging        
+
+        residualArray = divideArrayByValue(residualArray,cameraGain);//convert to electrons
+        dataArray = divideArrayByValue(dataArray,cameraGain);//convert to electrons per binned pixel
+        dataArray = divideArrayByValue(dataArray,binFactor*binFactor);//convert to electrons per unbinned pixel
+         
+        residualArray = multiplyArrayByValue(residualArray,pixCountNew);//total residual signal
+        dataArray = multiplyArrayByValue(dataArray,pixCountNew*binFactor*binFactor);//total signal within an ROI which we assume is uncorrelated variance        
+        double[] coVarArray = multiplyArrayByValue(dataArray,pixCountNew*binFactor*binFactor/numPixelsInPSF);
+        //if occuring covariance should be within a PSF. The total signal is scaled by the 
+        //number of unbinned pixels (number of actual measurements) in a PSF
+        //these would be the camera pixels which may have correlated noise        
+        dataArray=addTwoArrays(dataArray,coVarArray);//total variance
+         
+        for (int da = 0; da < dataArray.length; da++) {
+            sumWeightedVariance += (1 / dataArray[da]);
+        }
+        weightedAverageVariance = sumWeightedVariance / (dataArray.length);
+        double[] weightArray = new double[dataArray.length];
+        for (int wa = 0; wa < dataArray.length; wa++) {
+            weightArray[wa] = (1 / dataArray[wa]) / weightedAverageVariance;
+        }
+
         double[] residualArray2 = multiplyTwoArrays(residualArray, residualArray);
-        double[] dataArray1 = divideArrayByValue(dataArray, Math.sqrt(pixCount));
-        double[] arrayToSum = divideTwoArrays(residualArray2, dataArray1);
+        double[] arrayToSum = multiplyTwoArrays(residualArray2, weightArray);
         for (int tp = 0; tp < arrayToSum.length; tp++) {
             if (!Double.isInfinite(arrayToSum[tp])) {
                 chi2ToReturn += arrayToSum[tp];
             }
         }
-        int df;
-        if(fitTriple)
-            df=8;
-        if(fitDouble)
-            df=6;
-        else
-            df=4;
-        return chi2ToReturn/(residualArray.length-df);
+        int df = 0;
+        if (fitTriple) {
+            df = 8;
+        }
+        if (fitDouble) {
+            df = 6;
+        }
+        if (fitSingle) {
+            df = 4;
+        }
+        return (chi2ToReturn / ((residualArray.length - df))) * (weightedAverageVariance);
     }
     
     public static double getMeanOfArray(double[] theArray) {
@@ -1484,6 +1821,19 @@ ImagePlus img;
         double[] arrayToReturn = new double[array1.length];
         for (int i = 0; i < array1.length; i++) {
             arrayToReturn[i] = array1[i] - array2[i];
+        }
+        return arrayToReturn;
+
+    }
+    
+    private static double[] addTwoArrays(double[] array1, double[] array2) {
+        if (array1.length != array2.length) {
+            IJ.showMessage("psFRET_T_Profiler", "The time and data arrays are not the same length");
+            return null;
+        }
+        double[] arrayToReturn = new double[array1.length];
+        for (int i = 0; i < array1.length; i++) {
+            arrayToReturn[i] = array1[i] + array2[i];
         }
         return arrayToReturn;
 
